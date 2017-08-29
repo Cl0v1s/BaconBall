@@ -210,7 +210,6 @@ class GameMap {
 require("pixi.js");
 class Program {
     constructor() {
-        this.particles = [];
         this.ready = false;
         this.app = new PIXI.Application(384, 608, { backgroundColor: 0x282d44 });
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -229,7 +228,7 @@ class Program {
         return Program.Instance;
     }
     load() {
-        PIXI.loader.add("assets/animations/Hero.json").add("assets/animations/Pig.json").add("assets/animations/Tileset.json").add("assets/images/GUI/StatUI_background.png").add("assets/images/GUI/Heart.png").load(() => {
+        PIXI.loader.add("assets/animations/Hero.json").add("assets/animations/Pig.json").add("assets/animations/Tileset.json").add("assets/images/GUI/StatUI_background.png").add("assets/images/GUI/Heart.png").add("assets/animations/Particles.json").load(() => {
             this.setup();
         });
     }
@@ -237,8 +236,6 @@ class Program {
         console.log("Setup...");
         this.scene = new SceneGame();
         this.scene.init();
-        this.particleContainer = new PIXI.particles.ParticleContainer();
-        this.app.stage.addChild(this.particleContainer);
         this.app.render();
         this.ready = true;
     }
@@ -380,11 +377,12 @@ class EntityWalking {
 }
 /// <reference path="EntityWalking.ts" />
 class EntityPig extends EntityWalking {
-    constructor(x, y) {
+    constructor(scene, x, y) {
         super();
         this.shootx = 0;
         this.shooty = 0;
         this.hits = 0;
+        this.scene = scene;
         let frames = [];
         for (let i = 1; i < 17; i++) {
             frames.push(PIXI.Texture.fromFrame("pig" + i + ".png"));
@@ -399,29 +397,31 @@ class EntityPig extends EntityWalking {
         this.mass = 0.90;
     }
     reset() {
-        for (let i = 0; i < Math.random() * 10 + 20; i++) {
-            let dirx = Math.random() * 5;
-            let diry = Math.random() * 5;
-            if (Math.random() * 100 <= 50) dirx *= -1;
-            if (Math.random() * 100 <= 50) diry *= -1;
-            let rot = Math.random() * 20;
-            let p = new Particle("pig1.png", this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, 5, dirx, diry, rot, 0.3);
-            p.register();
-        }
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
+            x: this.sprite.x + this.sprite.width / 2,
+            y: this.sprite.y + this.sprite.height / 2,
+            life: 10,
+            particleLife: 10,
+            particleSpeed: 5,
+            angleMax: 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
         this.sprite.x = Program.GetInstance().App().renderer.width / 2 - this.sprite.width / 2;
         this.sprite.y = Program.GetInstance().App().renderer.height / 2 - this.sprite.height / 2;
         this.vx = 0;
         this.vy = 0;
         this.hits = 0;
-        for (let i = 0; i < Math.random() * 10 + 20; i++) {
-            let dirx = Math.random() * 5;
-            let diry = Math.random() * 5;
-            if (Math.random() * 100 <= 50) dirx *= -1;
-            if (Math.random() * 100 <= 50) diry *= -1;
-            let rot = Math.random() * 20;
-            let p = new Particle("pig1.png", this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, 5, dirx, diry, rot, 0.3);
-            p.register();
-        }
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
+            x: this.sprite.x + this.sprite.width / 2,
+            y: this.sprite.y + this.sprite.height / 2,
+            life: 10,
+            particleLife: 10,
+            particleSpeed: 5,
+            angleMax: 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
     }
     shake() {
         this.sprite.scale.set(1 + this.hits / 20, 1 + this.hits / 20);
@@ -463,10 +463,11 @@ class EntityPig extends EntityWalking {
 }
 /// <reference path="EntityWalking.ts" />
 class EntityPlayer extends EntityWalking {
-    constructor(x, y) {
+    constructor(scene, x, y) {
         super();
         this.life = Config.PlayerLife;
         this.onFire = 0;
+        this.scene = scene;
         let frames = [];
         for (let i = 1; i < 17; i++) {
             frames.push(PIXI.Texture.fromFrame("hero" + i + ".png"));
@@ -486,17 +487,53 @@ class EntityPlayer extends EntityWalking {
     update(delta) {
         super.update(delta);
         if (this.onFire > 0) {
-            this.onFire -= 1;
-            this.life -= Config.FireDamage;
+            this.onFire -= delta;
+            this.life -= Config.FireDamage * delta;
+            if (this.emitter != null) {
+                this.emitter.config.x = this.sprite.x + this.sprite.width / 2;
+                this.emitter.config.y = this.sprite.y + this.sprite.height / 2;
+                this.emitter.config.life = this.onFire;
+            }
         }
         if (this.life <= 0) this.reset();
     }
     setOnFire(value) {
         this.onFire = value ? Config.PlayerFireTime : 0;
+        if (value == false && this.emitter != null) {
+            // extinction du feu 
+            this.emitter.destroy();
+            this.emitter = null;
+            // en faisant de la fumée
+            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
+                x: this.sprite.x + this.sprite.width / 2,
+                y: this.sprite.y + this.sprite.height / 2,
+                life: 50,
+                particleLife: 40,
+                particleSpeed: 1,
+                angleMax: 45,
+                sizeRandom: true,
+                sizeMax: 4
+            });
+        }
+        if (value == false || this.emitter != null) return;
+        this.emitter = ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle1.png"), {
+            x: this.sprite.x + this.sprite.width / 2,
+            y: this.sprite.y + this.sprite.height / 2,
+            life: Config.PlayerFireTime,
+            particleLife: 25,
+            particleSpeed: 2,
+            angleMax: 20,
+            sizeRandom: false,
+            sizeMax: null
+        });
     }
     reset() {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
+        if (this.emitter != null) {
+            this.emitter.destroy();
+            this.emitter = null;
+        }
         this.life = Config.PlayerLife;
         this.sprite.x = 50;
         this.sprite.y = 50;
@@ -682,51 +719,97 @@ class HelperPlayer {
         if (map.grid[x][y] == Config.Tiles.Lava) player.setOnFire(true);else if (map.grid[x][y] == Config.Tiles.Water) player.setOnFire(false);
     }
 }
-/**
- * Created by clovis on 28/08/17.
- */
 class Particle {
-    constructor(file, x, y, time, directionx, directiony, rotation, scale) {
-        this.registered = false;
-        this.sprite = PIXI.Sprite.fromFrame(file);
-        this.sprite.x = x;
-        this.sprite.y = y;
-        this.time = time;
-        if (rotation != null) this.sprite.rotation.toFixed(rotation);
-        if (scale != null) this.sprite.scale.set(scale, scale);
-        this.directionx = directionx;
-        this.directiony = directiony;
+    constructor(texture) {
+        this.ready = true;
+        this.size = 1;
+        this.sprite = new PIXI.Sprite(texture);
     }
-    register() {
-        this.registered = true;
-        Program.GetInstance().particles[Particle.ID] = this;
-        Program.GetInstance().particleContainer.addChild(this.sprite);
-        this.id = Particle.ID;
-        Particle.ID++;
+    set(x, y, life, speed, angle, sizeRandom, sizeMax) {
+        this.sprite.x = x - this.sprite.width / 2;
+        this.sprite.y = y - this.sprite.height / 2;
+        this.originalLife = this.life = life;
+        let radians = angle * Math.PI / 180;
+        let modifier = Math.random();
+        if (Math.random() * 100 <= 50) modifier = -modifier;
+        radians += modifier;
+        if (sizeRandom && sizeMax != null) this.size = Math.random() * (sizeMax - 1) + 1;
+        this.vx = speed * Math.cos(radians);
+        this.vy = speed * Math.sin(radians);
+        this.ready = false;
+    }
+    Ready() {
+        return this.ready;
     }
     update(delta) {
-        this.sprite.x += this.directionx;
-        this.sprite.y += this.directiony;
-        this.sprite.alpha.toFixed(this.time);
-        this.time--;
-        if (this.time == 0) {
-            this.destroy();
-        }
-        console.log(this.time);
-    }
-    destroy() {
-        if (this.registered == false) return;
-        Program.GetInstance().particleContainer.removeChild(this.sprite);
-        Program.GetInstance().particles[this.id] = null;
-        //console.log(Program.GetInstance().particles);
+        if (this.ready == true) return;
+        this.life -= delta;
+        if (this.life > 0) {
+            this.sprite.x += this.vx * delta;
+            this.sprite.y += this.vy * delta;
+            let per = this.life / this.originalLife;
+            this.sprite.scale.set(this.size * per, this.size * per);
+            this.sprite.alpha = per;
+        } else this.ready = true;
     }
 }
-Particle.ID = 0;
+class ParticleEmitter {
+    constructor() {
+        this.particlePool = [];
+        this.totalParticles = 25;
+    }
+    static create(scene, texture, config, totalParticles) {
+        let em = new ParticleEmitter();
+        em.scene = scene;
+        em.config = config;
+        em.life = em.config.life;
+        em.container = new PIXI.particles.ParticleContainer();
+        if (totalParticles != null) em.totalParticles = totalParticles;
+        for (let i = 0; i < em.totalParticles; i++) {
+            em.particlePool.push(new Particle(texture));
+        }
+        em.id = em.scene.registerParticleEmitter(em);
+        return em;
+    }
+    createParticle() {
+        let particle = this.getFreeParticeFromPool();
+        if (particle == null) return;
+        let angle = Math.random() * this.config.angleMax;
+        angle -= 90;
+        particle.set(this.config.x, this.config.y, this.config.particleLife, this.config.particleSpeed, angle, this.config.sizeRandom, this.config.sizeMax);
+        this.container.addChild(particle.sprite);
+    }
+    destroy() {
+        this.scene.unregisterParticleEmitter(this.id);
+        this.container.destroy({ children: true });
+    }
+    update(delta) {
+        this.life -= delta;
+        this.createParticle();
+        if (this.life < 0) {
+            this.destroy();
+            return;
+        }
+        for (let i = 0; i < this.totalParticles; i++) {
+            if (!this.particlePool[i].Ready()) {
+                this.particlePool[i].update(delta);
+                if (this.particlePool[i].Ready()) this.container.removeChild(this.particlePool[i].sprite);
+            }
+        }
+    }
+    getFreeParticeFromPool() {
+        for (let i = 0; i < this.totalParticles; i++) {
+            if (this.particlePool[i].Ready()) return this.particlePool[i];
+        }
+        return null;
+    }
+}
 class SceneGame {
     constructor() {
         this.entities = [];
         this.controllers = [];
         this.guis = [];
+        this.emitterPool = [];
     }
     init() {
         // Ajout de la carte en fond
@@ -740,25 +823,43 @@ class SceneGame {
         // Génération de la map
         this.map = new GameMap();
         // Creating players
-        this.player1 = new EntityPlayer(50, 50);
+        this.player1 = new EntityPlayer(this, 50, 50);
         this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
         this.entities.push(this.player1);
-        this.player2 = new EntityPlayer(50, 150);
+        this.player2 = new EntityPlayer(this, 50, 150);
         this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
         this.entities.push(this.player2);
         // Creating pig
-        this.ball = new EntityPig(100, 100);
+        this.ball = new EntityPig(this, 100, 100);
         this.entities.push(this.ball);
         // Creating GUI
         this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player1, 0));
         this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player2, 3.142));
     }
-    update(delta) {
-        for (let id in Program.GetInstance().particles) {
-            let particle = Program.GetInstance().particles[id];
-            if (particle == null) continue;
-            particle.update(delta);
+    updateParticleEmitters(delta) {
+        this.emitterPool.forEach(emitter => {
+            if (emitter == null) return;
+            emitter.update(delta);
+        });
+    }
+    registerParticleEmitter(em) {
+        let id = this.emitterPool.length;
+        for (let i = 0; i < this.emitterPool.length; i++) {
+            if (this.emitterPool[i] == null) {
+                id = i;
+                break;
+            }
         }
+        if (id == this.emitterPool.length) this.emitterPool.push(em);else this.emitterPool[id] = em;
+        Program.GetInstance().App().stage.addChild(em.container);
+        return id;
+    }
+    unregisterParticleEmitter(id) {
+        if (this.emitterPool[id] == null) return;
+        Program.GetInstance().App().stage.addChild(this.emitterPool[id].container);
+        this.emitterPool[id] = null;
+    }
+    update(delta) {
         this.entities.forEach(entity => {
             let normal = null;
             HelperPlayer.CheckPlayerTile(this.map, entity);
@@ -782,6 +883,7 @@ class SceneGame {
         this.guis.forEach(gui => {
             gui.update();
         });
+        this.updateParticleEmitters(delta);
     }
     destroy() {
         let self = this;

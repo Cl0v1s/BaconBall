@@ -4,7 +4,6 @@
 require("pixi.js");
 
 
-
 class Program
 {
     // EntryPoint
@@ -32,8 +31,6 @@ class Program
     // StateFull Object
     private app : PIXI.Application;
     private scene : Scene;
-    public particleContainer : PIXI.particles.ParticleContainer;
-    public particles : Array<Particle> = [];
     private ready : boolean = false;
 
     constructor()
@@ -42,6 +39,8 @@ class Program
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         document.body.appendChild(this.app.view);
         this.load();
+
+
     }
 
     private load() : void
@@ -51,6 +50,7 @@ class Program
                     .add("assets/animations/Tileset.json")
                     .add("assets/images/GUI/StatUI_background.png")
                     .add("assets/images/GUI/Heart.png")
+                    .add("assets/animations/Particles.json")
                     .load(() => { this.setup(); });
     }
 
@@ -60,10 +60,13 @@ class Program
 
         this.scene = new SceneGame();
         this.scene.init();
-        this.particleContainer = new PIXI.particles.ParticleContainer();
-        this.app.stage.addChild(this.particleContainer);
         this.app.render();
         this.ready = true;
+
+
+
+
+
     }
 
     public Ready() : boolean

@@ -6,6 +6,8 @@ interface Entity
     sprite : PIXI.Sprite;
     mass : number;
 
+    scene : Scene;
+
     vx : number;
     vy : number;
 

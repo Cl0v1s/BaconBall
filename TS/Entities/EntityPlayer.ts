@@ -6,10 +6,12 @@ class EntityPlayer extends EntityWalking
 
     private life : number = Config.PlayerLife;
     private onFire : number = 0;
+    private emitter : ParticleEmitter;
 
-    constructor(x : number, y : number)
+    constructor(scene : Scene,x : number, y : number)
     {
         super();
+        this.scene = scene;
         let frames = [];
         for(let i = 1; i < 17; i++)
         {
@@ -36,8 +38,14 @@ class EntityPlayer extends EntityWalking
         super.update(delta);
         if(this.onFire > 0)
         {
-            this.onFire -= 1;
-            this.life -= Config.FireDamage;
+            this.onFire -= delta;
+            this.life -= Config.FireDamage * delta;
+            if(this.emitter != null)
+                {
+            this.emitter.config.x = this.sprite.x + this.sprite.width / 2;
+            this.emitter.config.y = this.sprite.y + this.sprite.height / 2;
+            this.emitter.config.life = this.onFire;
+                }
         }
         if(this.life <= 0)
             this.reset();
@@ -46,12 +54,47 @@ class EntityPlayer extends EntityWalking
     public setOnFire(value : boolean) : void
     {
         this.onFire = value ? Config.PlayerFireTime : 0;
+        if(value == false && this.emitter != null)
+        {
+            // extinction du feu 
+            this.emitter.destroy();
+            this.emitter = null;
+            // en faisant de la fumée
+            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
+                x : this.sprite.x + this.sprite.width / 2,
+                y : this.sprite.y + this.sprite.height / 2,
+                life : 50,
+                particleLife : 40,
+                particleSpeed : 1,
+                angleMax : 45,
+                sizeRandom: true,
+                sizeMax: 4
+            });
+        }
+        if(value == false || this.emitter != null)
+            return;
+        this.emitter = ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle1.png"), {
+            x : this.sprite.x + this.sprite.width / 2,
+            y : this.sprite.y + this.sprite.height / 2,
+            life : Config.PlayerFireTime,
+            particleLife : 25,
+            particleSpeed : 2,
+            angleMax : 20,
+            sizeRandom: false,
+            sizeMax: null
+        })
+
     }
 
     private reset() : void
     {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
+        if(this.emitter != null)
+        {
+            this.emitter.destroy();
+            this.emitter = null;
+        }
         this.life = Config.PlayerLife;
         this.sprite.x = 50;
         this.sprite.y = 50;

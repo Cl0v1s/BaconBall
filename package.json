@@ -5,10 +5,11 @@
   "main": "main.js",
   "scripts": {
     "run": "superstatic",
-    "build": "tsc --project TS && babel main.js --out-file babel.js && browserify main.js -o index.js"
+    "build": "tsc --project TS && babel main.js --out-file babel.js && browserify main.js -o  index.js"
   },
   "author": "Clovis Portron",
   "license": "ISC",
+
   "dependencies": {
     "pixi-particles": "^2.1.5",
     "pixi.js": "^4.5.5"

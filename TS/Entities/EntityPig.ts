@@ -8,9 +8,10 @@ class EntityPig extends EntityWalking
     private shooty : number = 0;
     private hits : number = 0;
 
-    constructor(x : number, y : number)
+    constructor(scene : Scene,x : number, y : number)
     {
         super();
+        this.scene = scene;
         let frames = [];
         for(let i = 1; i < 17; i++)
         {
@@ -31,38 +32,31 @@ class EntityPig extends EntityWalking
 
     private reset() : void
     {
-        for(let i = 0; i < Math.random() * 10 + 20; i++) {
-            let dirx = Math.random() *5;
-            let diry = Math.random() *5;
-            if(Math.random() * 100 <= 50)
-                dirx *= -1;
-            if(Math.random() * 100 <= 50)
-                diry *= -1;
-
-            let rot = Math.random() * 20;
-
-            let p = new Particle("pig1.png", this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height/2, 5, dirx, diry, rot, 0.3);
-            p.register();
-        }
-
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
+            x : this.sprite.x + this.sprite.width / 2,
+            y : this.sprite.y + this.sprite.height / 2,
+            life : 10,
+            particleLife : 10,
+            particleSpeed : 5,
+            angleMax : 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
         this.sprite.x = Program.GetInstance().App().renderer.width / 2 - this.sprite.width/2;
         this.sprite.y = Program.GetInstance().App().renderer.height / 2 - this.sprite.height / 2;
         this.vx = 0;
         this.vy = 0;
         this.hits = 0;
-        for(let i = 0; i < Math.random() * 10 + 20; i++) {
-            let dirx = Math.random() *5;
-            let diry = Math.random() *5;
-            if(Math.random() * 100 <= 50)
-                dirx *= -1;
-            if(Math.random() * 100 <= 50)
-                diry *= -1;
-
-            let rot = Math.random() * 20;
-
-            let p = new Particle("pig1.png", this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height/2, 5, dirx, diry, rot, 0.3);
-            p.register();
-        }
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
+            x : this.sprite.x + this.sprite.width / 2,
+            y : this.sprite.y + this.sprite.height / 2,
+            life : 10,
+            particleLife : 10,
+            particleSpeed : 5,
+            angleMax : 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
     }
 
     private shake() : void

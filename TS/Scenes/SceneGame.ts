@@ -7,6 +7,7 @@ class SceneGame implements Scene
     private entities : Array<Entity> = [];
     private controllers : Array<Controller> = [];
     private guis : Array<GUI> = [];
+    private emitterPool : Array<ParticleEmitter> = [];
 
     public init(): void {
         // Ajout de la carte en fond
@@ -22,16 +23,16 @@ class SceneGame implements Scene
         this.map = new GameMap();
 
         // Creating players
-        this.player1 = new EntityPlayer(50,50);
+        this.player1 = new EntityPlayer(this, 50,50);
         this.controllers.push(new ControllerKeyboard(this.player1,  90, 83, 81,68 ));
         this.entities.push(this.player1);
 
-        this.player2 = new EntityPlayer(50,150);
+        this.player2 = new EntityPlayer(this, 50,150);
         this.controllers.push(new ControllerKeyboard(this.player2,38,40, 37, 39));
         this.entities.push(this.player2);
 
         // Creating pig
-        this.ball = new EntityPig(100,100);
+        this.ball = new EntityPig(this, 100,100);
         this.entities.push(this.ball);
 
         // Creating GUI
@@ -41,15 +42,43 @@ class SceneGame implements Scene
 
     }
 
-    public update(delta : number): void {
+    private updateParticleEmitters(delta) : void 
+    {
+        this.emitterPool.forEach((emitter) => {
+            if(emitter == null)
+                return;
+            emitter.update(delta);
+        })
+    }
 
-        for(let id in Program.GetInstance().particles)
+    public registerParticleEmitter(em : ParticleEmitter) : number
+    {
+        let id : number = this.emitterPool.length;
+        for(let i = 0; i < this.emitterPool.length; i++)
         {
-            let particle = Program.GetInstance().particles[id];
-            if(particle == null)
-                continue;
-            particle.update(delta);
+            if(this.emitterPool[i] == null)
+                {
+                    id = i;
+                    break;                    
+                }
         }
+        if(id == this.emitterPool.length)
+            this.emitterPool.push(em);
+        else 
+            this.emitterPool[id] = em;
+        Program.GetInstance().App().stage.addChild(em.container);
+        return id;
+    }
+
+    public unregisterParticleEmitter(id : number)
+    {
+        if(this.emitterPool[id] == null)
+            return;
+        Program.GetInstance().App().stage.addChild(this.emitterPool[id].container);
+        this.emitterPool[id] = null;
+    }
+
+    public update(delta : number): void {
         this.entities.forEach((entity) => {
            let normal : any = null;
             HelperPlayer.CheckPlayerTile(this.map, entity);
@@ -80,6 +109,9 @@ class SceneGame implements Scene
         this.guis.forEach((gui) => {
            gui.update();
         });
+
+        this.updateParticleEmitters(delta);
+
 
     }
 
