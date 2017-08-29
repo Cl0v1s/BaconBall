@@ -17,7 +17,7 @@ Config.AirDensity = 0.3;
 Config.PlayerLife = 3;
 Config.PlayerFireTime = 500;
 Config.PlayerSpeed = 10;
-Config.FireDamage = 0.001;
+Config.FireDamage = 0.01;
 Config.TileSize = 32;
 Config.ObstacleProbability = 30; //%
 Config.ObstacleLength = 3;
@@ -229,7 +229,7 @@ class Program {
         return Program.Instance;
     }
     load() {
-        PIXI.loader.add("assets/animations/Hero.json").add("assets/animations/Pig.json").add("assets/animations/Tileset.json").load(() => {
+        PIXI.loader.add("assets/animations/Hero.json").add("assets/animations/Pig.json").add("assets/animations/Tileset.json").add("assets/images/GUI/StatUI_background.png").add("assets/images/GUI/Heart.png").load(() => {
             this.setup();
         });
     }
@@ -490,8 +490,6 @@ class EntityPlayer extends EntityWalking {
             this.life -= Config.FireDamage;
         }
         if (this.life <= 0) this.reset();
-        console.log("Life: " + this.life);
-        console.log("Fire:" + this.onFire);
     }
     setOnFire(value) {
         this.onFire = value ? Config.PlayerFireTime : 0;
@@ -502,6 +500,7 @@ class EntityPlayer extends EntityWalking {
         this.life = Config.PlayerLife;
         this.sprite.x = 50;
         this.sprite.y = 50;
+        this.onFire = 0;
         this.vx = 0;
         this.vy = 0;
     }
@@ -519,6 +518,48 @@ class EntityPlayer extends EntityWalking {
     }
     moveDown() {
         if (this.vy >= 0) this.vy = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
+    }
+}
+var Sprite = PIXI.Sprite;
+class GUIStat {
+    constructor(x, y, player, rotation) {
+        this.x = x;
+        this.y = y;
+        this.player = player;
+        this.container = new PIXI.Container();
+        /*this.container.addChild(
+            PIXI.Sprite.fromImage("assets/images/GUI/StatUI_background.png")
+        );*/
+        this.container.x = x;
+        this.container.y = y;
+        this.container.width = 40 * Config.PlayerLife;
+        this.container.height = 32;
+        this.container.rotation = rotation;
+        this.hearts = [];
+        let sprite;
+        for (let i = 0; i < Math.round(this.player.Life() + 1); i++) {
+            sprite = PIXI.Sprite.fromImage("assets/images/GUI/Heart.png");
+            sprite.x = i * 40;
+            sprite.y = 0;
+            this.hearts.push(sprite);
+            this.container.addChild(sprite);
+        }
+        this.lastLife = Math.round(this.player.Life());
+        Program.GetInstance().App().stage.addChild(this.container);
+    }
+    update() {
+        if (this.lastLife != Math.round(this.player.Life())) {
+            this.hearts.forEach(gui => {
+                gui.x = -400;
+            });
+            for (let i = 0; i < Math.round(this.player.Life() + 1); i++) {
+                this.hearts[i].x = i * 40;
+            }
+            this.lastLife = Math.round(this.player.Life());
+        }
+    }
+    destroy() {
+        Program.GetInstance().App().stage.removeChild(this.container);
     }
 }
 class Vector2 {
@@ -636,8 +677,8 @@ class HelperPlayer {
     static CheckPlayerTile(map, entity) {
         if (entity instanceof EntityPlayer == false) return;
         let player = entity;
-        let x = Math.floor(entity.sprite.x / Config.TileSize);
-        let y = Math.floor(entity.sprite.y / Config.TileSize);
+        let x = Math.floor((entity.sprite.x + entity.sprite.width / 2) / Config.TileSize);
+        let y = Math.floor((entity.sprite.y + entity.sprite.height) / Config.TileSize);
         if (map.grid[x][y] == Config.Tiles.Lava) player.setOnFire(true);else if (map.grid[x][y] == Config.Tiles.Water) player.setOnFire(false);
     }
 }
@@ -685,6 +726,7 @@ class SceneGame {
     constructor() {
         this.entities = [];
         this.controllers = [];
+        this.guis = [];
     }
     init() {
         // Ajout de la carte en fond
@@ -707,6 +749,9 @@ class SceneGame {
         // Creating pig
         this.ball = new EntityPig(100, 100);
         this.entities.push(this.ball);
+        // Creating GUI
+        this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player1, 0));
+        this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player2, 3.142));
     }
     update(delta) {
         for (let id in Program.GetInstance().particles) {
@@ -734,6 +779,9 @@ class SceneGame {
             if (normal != null) HelperEntity.resolveCollision(normal, entity);
             entity.update(delta);
         });
+        this.guis.forEach(gui => {
+            gui.update();
+        });
     }
     destroy() {
         let self = this;
@@ -741,6 +789,9 @@ class SceneGame {
         this.map.destroy();
         this.entities.forEach(entity => {
             entity.destroy();
+        });
+        this.guis.forEach(gui => {
+            gui.destroy();
         });
     }
 }

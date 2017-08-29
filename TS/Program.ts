@@ -49,6 +49,8 @@ class Program
         PIXI.loader.add("assets/animations/Hero.json")
                     .add("assets/animations/Pig.json")
                     .add("assets/animations/Tileset.json")
+                    .add("assets/images/GUI/StatUI_background.png")
+                    .add("assets/images/GUI/Heart.png")
                     .load(() => { this.setup(); });
     }
 

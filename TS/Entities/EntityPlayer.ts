@@ -55,6 +55,7 @@ class EntityPlayer extends EntityWalking
         this.life = Config.PlayerLife;
         this.sprite.x = 50;
         this.sprite.y = 50;
+        this.onFire = 0;
         this.vx = 0;
         this.vy = 0;
     }

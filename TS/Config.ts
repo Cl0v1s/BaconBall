@@ -10,7 +10,7 @@ class Config
     public static PlayerSpeed : number = 10;
 
 
-    public static FireDamage : number = 0.001;
+    public static FireDamage : number = 0.01;
 
     public static TileSize : number = 32;
 

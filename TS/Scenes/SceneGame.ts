@@ -6,6 +6,7 @@ class SceneGame implements Scene
     private ball : EntityPig;
     private entities : Array<Entity> = [];
     private controllers : Array<Controller> = [];
+    private guis : Array<GUI> = [];
 
     public init(): void {
         // Ajout de la carte en fond
@@ -32,6 +33,11 @@ class SceneGame implements Scene
         // Creating pig
         this.ball = new EntityPig(100,100);
         this.entities.push(this.ball);
+
+        // Creating GUI
+        this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player1, 0));
+        this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player2, 3.142));
+
 
     }
 
@@ -71,6 +77,9 @@ class SceneGame implements Scene
             entity.update(delta);
 
         });
+        this.guis.forEach((gui) => {
+           gui.update();
+        });
 
     }
 
@@ -80,6 +89,9 @@ class SceneGame implements Scene
         this.map.destroy();
         this.entities.forEach((entity) => {
            entity.destroy();
+        });
+        this.guis.forEach((gui) => {
+           gui.destroy();
         });
     }
 
