@@ -15,6 +15,10 @@ class Config {
     }
 }
 Config.AirDensity = 0.3;
+Config.PlayerLife = 3;
+Config.PlayerFireTime = 500;
+Config.PlayerSpeed = 10;
+Config.FireDamage = 0.001;
 Config.TileSize = 32;
 Config.ObstacleProbability = 30; //%
 Config.ObstacleLength = 3;
@@ -535,6 +539,8 @@ class EntityPig extends EntityWalking {
 class EntityPlayer extends EntityWalking {
     constructor(x, y) {
         super();
+        this.life = Config.PlayerLife;
+        this.onFire = 0;
         let frames = [];
         for (let i = 1; i < 17; i++) {
             frames.push(PIXI.Texture.fromFrame("hero" + i + ".png"));
@@ -548,27 +554,50 @@ class EntityPlayer extends EntityWalking {
         Program.GetInstance().App().stage.addChild(this.sprite);
         this.mass = 0.3;
     }
+    Life() {
+        return this.life;
+    }
     update(delta) {
         super.update(delta);
+        if (this.onFire > 0) {
+            this.onFire -= 1;
+            this.life -= Config.FireDamage;
+        }
+        if (this.life <= 0)
+            this.reset();
+        console.log("Life: " + this.life);
+        console.log("Fire:" + this.onFire);
+    }
+    setOnFire(value) {
+        this.onFire = value ? Config.PlayerFireTime : 0;
+    }
+    reset() {
+        //TODO: ajouter particles
+        //TODO: ajouter spawn a coté des buts
+        this.life = Config.PlayerLife;
+        this.sprite.x = 50;
+        this.sprite.y = 50;
+        this.vx = 0;
+        this.vy = 0;
     }
     destroy() {
         Program.GetInstance().App().stage.removeChild(this.sprite);
     }
     moveLeft() {
         if (this.vx <= 0)
-            this.vx = -10;
+            this.vx = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
     }
     moveRight() {
         if (this.vx >= 0)
-            this.vx = 10;
+            this.vx = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
     }
     moveUp() {
         if (this.vy <= 0)
-            this.vy = -10;
+            this.vy = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
     }
     moveDown() {
         if (this.vy >= 0)
-            this.vy = 10;
+            this.vy = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
     }
 }
 class Vector2 {
@@ -694,6 +723,22 @@ class HelperEntity {
     }
 }
 /**
+ * Created by clovis on 29/08/17.
+ */
+class HelperPlayer {
+    static CheckPlayerTile(map, entity) {
+        if (entity instanceof EntityPlayer == false)
+            return;
+        let player = entity;
+        let x = Math.floor(entity.sprite.x / Config.TileSize);
+        let y = Math.floor(entity.sprite.y / Config.TileSize);
+        if (map.grid[x][y] == Config.Tiles.Lava)
+            player.setOnFire(true);
+        else if (map.grid[x][y] == Config.Tiles.Water)
+            player.setOnFire(false);
+    }
+}
+/**
  * Created by clovis on 28/08/17.
  */
 class Particle {
@@ -770,6 +815,7 @@ class SceneGame {
         }
         this.entities.forEach((entity) => {
             let normal = null;
+            HelperPlayer.CheckPlayerTile(this.map, entity);
             // Vérification des collisions entre entités
             this.entities.forEach((other) => {
                 if (other == entity)

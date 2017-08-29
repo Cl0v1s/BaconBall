@@ -46,6 +46,8 @@ class SceneGame implements Scene
         }
         this.entities.forEach((entity) => {
            let normal : any = null;
+            HelperPlayer.CheckPlayerTile(this.map, entity);
+
            // Vérification des collisions entre entités
            this.entities.forEach((other) => {
                if(other == entity)

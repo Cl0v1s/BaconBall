@@ -5,6 +5,12 @@ class Config
 {
     public static AirDensity : number = 0.3;
 
+    public static PlayerLife : number = 3;
+    public static PlayerFireTime : number = 500;
+    public static PlayerSpeed : number = 10;
+
+
+    public static FireDamage : number = 0.001;
 
     public static TileSize : number = 32;
 
