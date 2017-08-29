@@ -32,11 +32,13 @@ class Program
     // StateFull Object
     private app : PIXI.Application;
     private scene : Scene;
+    public particleContainer : PIXI.particles.ParticleContainer;
+    public particles : Array<Particle> = [];
     private ready : boolean = false;
 
     constructor()
     {
-        this.app = new PIXI.Application(384, 608, {backgroundColor : 0x1099bb});
+        this.app = new PIXI.Application(384, 608, {backgroundColor : 0x282d44});
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         document.body.appendChild(this.app.view);
         this.load();
@@ -56,6 +58,8 @@ class Program
 
         this.scene = new SceneGame();
         this.scene.init();
+        this.particleContainer = new PIXI.particles.ParticleContainer();
+        this.app.stage.addChild(this.particleContainer);
         this.app.render();
         this.ready = true;
     }

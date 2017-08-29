@@ -16,6 +16,26 @@ class Config
         "Wall" : 1,
         "WallH" : 2,
         "WallV" : 3,
+
+        "Lava" : 25,
+        "LavaTR" : 15,
+        "LavaT" : 16,
+        "LavaR" : 17,
+        "LavaTL" : 18,
+        "LavaBR" : 19,
+        "LavaBL" : 20,
+        "LavaB" : 21,
+        "LavaL" : 22,
+
+        "Water" : 26,
+        "WaterTR" : 4,
+        "WaterT" : 5,
+        "WaterR" : 6,
+        "WaterTL" : 7,
+        "WaterBR" : 8,
+        "WaterBL" : 9,
+        "WaterB" : 10,
+        "WaterL" : 11
     };
 
     public static TilesWalkable(tile : number)
@@ -24,6 +44,8 @@ class Config
             default:
                 return false;
             case Config.Tiles.Ground:
+            case Config.Tiles.Lava:
+            case Config.Tiles.Water:
                 return true;
         }
     }

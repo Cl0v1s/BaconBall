@@ -36,6 +36,14 @@ class SceneGame implements Scene
     }
 
     public update(delta : number): void {
+
+        for(let id in Program.GetInstance().particles)
+        {
+            let particle = Program.GetInstance().particles[id];
+            if(particle == null)
+                continue;
+            particle.update(delta);
+        }
         this.entities.forEach((entity) => {
            let normal : any = null;
            // Vérification des collisions entre entités
@@ -61,6 +69,7 @@ class SceneGame implements Scene
             entity.update(delta);
 
         });
+
     }
 
     public destroy(): void {

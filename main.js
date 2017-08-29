@@ -7,6 +7,8 @@ class Config {
             default:
                 return false;
             case Config.Tiles.Ground:
+            case Config.Tiles.Lava:
+            case Config.Tiles.Water:
                 return true;
         }
     }
@@ -20,6 +22,24 @@ Config.Tiles = {
     "Wall": 1,
     "WallH": 2,
     "WallV": 3,
+    "Lava": 25,
+    "LavaTR": 15,
+    "LavaT": 16,
+    "LavaR": 17,
+    "LavaTL": 18,
+    "LavaBR": 19,
+    "LavaBL": 20,
+    "LavaB": 21,
+    "LavaL": 22,
+    "Water": 26,
+    "WaterTR": 4,
+    "WaterT": 5,
+    "WaterR": 6,
+    "WaterTL": 7,
+    "WaterBR": 8,
+    "WaterBL": 9,
+    "WaterB": 10,
+    "WaterL": 11
 };
 class GameMap {
     constructor() {
@@ -31,7 +51,7 @@ class GameMap {
         for (let i = 0; i < this.width; i++) {
             let row = [];
             for (let u = 0; u < this.height; u++) {
-                row.push(0);
+                row.push(Config.Tiles.Ground);
             }
             this.grid.push(row);
         }
@@ -40,6 +60,8 @@ class GameMap {
     generate() {
         this.generateWalls();
         this.generateObstacles();
+        let lava = this.generateLava();
+        this.generateWater(lava);
         this.generateSprites();
         console.log(this.grid);
     }
@@ -48,15 +70,89 @@ class GameMap {
         for (let i = 0; i < this.width; i++) {
             let row = [];
             for (let u = 0; u < this.height; u++) {
-                if (this.grid[i][u] == Config.Tiles.Ground)
+                let tile = (this.grid[i][u]);
+                // Adoucissement des murs
+                tile = this.polishWalls(tile, i, u);
+                // Adoucissement de la lave
+                tile = this.polishLava(tile, i, u);
+                // Adoucissement de l'eau
+                tile = this.polishWater(tile, i, u);
+                if (tile == Config.Tiles.Ground)
                     continue;
-                sprite = PIXI.Sprite.fromFrame("tile" + (this.grid[i][u] + 1) + ".png");
+                console.log(tile);
+                sprite = PIXI.Sprite.fromFrame("tile" + (tile + 1) + ".png");
                 sprite.x = i * Config.TileSize;
                 sprite.y = u * Config.TileSize;
                 this.container.addChild(sprite);
             }
             this.grid.push(row);
         }
+    }
+    polishWalls(tile, x, y) {
+        if (tile == Config.Tiles.WallH &&
+            (this.grid[x + 1] != null && (this.grid[x + 1][y] != Config.Tiles.WallH && this.grid[x + 1][y] != Config.Tiles.WallV) ||
+                this.grid[x - 1] != null && (this.grid[x - 1][y] != Config.Tiles.WallH && this.grid[x - 1][y] != Config.Tiles.WallV))) {
+            tile = Config.Tiles.Wall;
+        }
+        return tile;
+    }
+    polishWater(tile, x, y) {
+        if (tile != Config.Tiles.Ground)
+            return tile;
+        if (this.grid[x] != null && this.grid[x][y + 1] == Config.Tiles.Water)
+            return Config.Tiles.WaterT;
+        if (this.grid[x - 1] != null && this.grid[x - 1][y + 1] == Config.Tiles.Water) {
+            if (this.grid[x - 1][y] != Config.Tiles.Water)
+                return Config.Tiles.WaterTR;
+            else
+                return Config.Tiles.WaterR;
+        }
+        if (this.grid[x + 1] != null && this.grid[x + 1][y + 1] == Config.Tiles.Water) {
+            if (this.grid[x + 1][y] != Config.Tiles.Water)
+                return Config.Tiles.WaterTL;
+            else
+                return Config.Tiles.WaterL;
+        }
+        if (this.grid[x - 1] != null && this.grid[x - 1][y] == Config.Tiles.Water)
+            return Config.Tiles.WaterR;
+        if (this.grid[x + 1] != null && this.grid[x + 1][y] == Config.Tiles.Water)
+            return Config.Tiles.WaterL;
+        if (this.grid[x] != null && this.grid[x][y - 1] == Config.Tiles.Water)
+            return Config.Tiles.WaterB;
+        if (this.grid[x - 1] != null && this.grid[x - 1][y - 1] == Config.Tiles.Water)
+            return Config.Tiles.WaterBR;
+        if (this.grid[x + 1] != null && this.grid[x + 1][y - 1] == Config.Tiles.Water)
+            return Config.Tiles.WaterBL;
+        return tile;
+    }
+    polishLava(tile, x, y) {
+        if (tile != Config.Tiles.Ground)
+            return tile;
+        if (this.grid[x] != null && this.grid[x][y + 1] == Config.Tiles.Lava)
+            return Config.Tiles.LavaT;
+        if (this.grid[x - 1] != null && this.grid[x - 1][y + 1] == Config.Tiles.Lava) {
+            if (this.grid[x - 1][y] != Config.Tiles.Lava)
+                return Config.Tiles.LavaTR;
+            else
+                return Config.Tiles.LavaR;
+        }
+        if (this.grid[x + 1] != null && this.grid[x + 1][y + 1] == Config.Tiles.Lava) {
+            if (this.grid[x + 1][y] != Config.Tiles.Lava)
+                return Config.Tiles.LavaTL;
+            else
+                return Config.Tiles.LavaL;
+        }
+        if (this.grid[x - 1] != null && this.grid[x - 1][y] == Config.Tiles.Lava)
+            return Config.Tiles.LavaR;
+        if (this.grid[x + 1] != null && this.grid[x + 1][y] == Config.Tiles.Lava)
+            return Config.Tiles.LavaL;
+        if (this.grid[x] != null && this.grid[x][y - 1] == Config.Tiles.Lava)
+            return Config.Tiles.LavaB;
+        if (this.grid[x - 1] != null && this.grid[x - 1][y - 1] == Config.Tiles.Lava)
+            return Config.Tiles.LavaBR;
+        if (this.grid[x + 1] != null && this.grid[x + 1][y - 1] == Config.Tiles.Lava)
+            return Config.Tiles.LavaBL;
+        return tile;
     }
     generateWalls() {
         for (let i = 0; i < this.width; i++) {
@@ -91,10 +187,56 @@ class GameMap {
                 else
                     x = 1;
                 this.generateObstacle(x, u);
-                u += 2;
+                u += 3;
             }
             else
                 u++;
+        }
+    }
+    generateLava() {
+        let gen = false;
+        let x = Math.floor(Math.random() * (this.height - 1) + 1);
+        let y = Math.floor(Math.random() * (this.height - 1) + 1);
+        let width = Math.floor(Math.random() * 3 + 1);
+        let height = Math.floor(Math.random() * 3 + 1);
+        for (let i = 0; i < width; i++) {
+            for (let u = 0; u < height; u++) {
+                if (this.grid[x + i] != null && this.grid[x + i][y + u] == Config.Tiles.Ground) {
+                    this.grid[x + i][y + u] = Config.Tiles.Lava;
+                    gen = true;
+                }
+            }
+        }
+        return gen;
+    }
+    generateWater(force) {
+        let gen = false;
+        let tries = 3;
+        while (gen == false) {
+            tries -= 1;
+            if (tries < 0)
+                return;
+            let x = Math.floor(Math.random() * (this.height - 1) + 1);
+            let y = Math.floor(Math.random() * (this.height - 1) + 1);
+            let width = Math.floor(Math.random() * 3 + 1);
+            let height = Math.floor(Math.random() * 3 + 1);
+            for (let i = 0; i < width; i++) {
+                for (let u = 0; u < height; u++) {
+                    if (this.grid[x + i] != null && this.grid[x + i][y + u] == Config.Tiles.Ground) {
+                        if (this.grid[x][y - 1] == Config.Tiles.Lava || this.grid[x][y - 2] == Config.Tiles.Lava ||
+                            this.grid[x][y + 1] == Config.Tiles.Lava || this.grid[x][y + 2] == Config.Tiles.Lava ||
+                            (this.grid[x - 1] != null && this.grid[x - 1][y] == Config.Tiles.Lava) || (this.grid[x - 2] != null && this.grid[x - 2][y] == Config.Tiles.Lava) ||
+                            (this.grid[x + 1] != null && this.grid[x + 1][y] == Config.Tiles.Lava) || (this.grid[x + 2] != null && this.grid[x + 2][y] == Config.Tiles.Lava) ||
+                            (this.grid[x - 1] != null && this.grid[x - 1][y - 1] == Config.Tiles.Lava) || (this.grid[x - 2] != null && this.grid[x - 2][y - 2] == Config.Tiles.Lava) ||
+                            (this.grid[x + 1] != null && this.grid[x + 1][y - 1] == Config.Tiles.Lava) || (this.grid[x + 2] != null && this.grid[x + 2][y - 2] == Config.Tiles.Lava) ||
+                            (this.grid[x - 1] != null && this.grid[x - 1][y + 1] == Config.Tiles.Lava) || (this.grid[x - 2] != null && this.grid[x - 2][y + 2] == Config.Tiles.Lava) ||
+                            (this.grid[x + 1] != null && this.grid[x + 1][y + 1] == Config.Tiles.Lava) || (this.grid[x + 2] != null && this.grid[x + 2][y + 2] == Config.Tiles.Lava))
+                            continue;
+                        this.grid[x + i][y + u] = Config.Tiles.Water;
+                        gen = true;
+                    }
+                }
+            }
         }
     }
     destroy() {
@@ -107,8 +249,9 @@ class GameMap {
 require("pixi.js");
 class Program {
     constructor() {
+        this.particles = [];
         this.ready = false;
-        this.app = new PIXI.Application(384, 608, { backgroundColor: 0x1099bb });
+        this.app = new PIXI.Application(384, 608, { backgroundColor: 0x282d44 });
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         document.body.appendChild(this.app.view);
         this.load();
@@ -136,6 +279,8 @@ class Program {
         console.log("Setup...");
         this.scene = new SceneGame();
         this.scene.init();
+        this.particleContainer = new PIXI.particles.ParticleContainer();
+        this.app.stage.addChild(this.particleContainer);
         this.app.render();
         this.ready = true;
     }
@@ -296,6 +441,7 @@ class EntityPig extends EntityWalking {
         super();
         this.shootx = 0;
         this.shooty = 0;
+        this.hits = 0;
         let frames = [];
         for (let i = 1; i < 17; i++) {
             frames.push(PIXI.Texture.fromFrame("pig" + i + ".png"));
@@ -309,6 +455,38 @@ class EntityPig extends EntityWalking {
         Program.GetInstance().App().stage.addChild(this.sprite);
         this.mass = 0.90;
     }
+    reset() {
+        for (let i = 0; i < Math.random() * 10 + 20; i++) {
+            let dirx = Math.random() * 5;
+            let diry = Math.random() * 5;
+            if (Math.random() * 100 <= 50)
+                dirx *= -1;
+            if (Math.random() * 100 <= 50)
+                diry *= -1;
+            let rot = Math.random() * 20;
+            let p = new Particle("pig1.png", this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, 5, dirx, diry, rot, 0.3);
+            p.register();
+        }
+        this.sprite.x = Program.GetInstance().App().renderer.width / 2 - this.sprite.width / 2;
+        this.sprite.y = Program.GetInstance().App().renderer.height / 2 - this.sprite.height / 2;
+        this.vx = 0;
+        this.vy = 0;
+        this.hits = 0;
+        for (let i = 0; i < Math.random() * 10 + 20; i++) {
+            let dirx = Math.random() * 5;
+            let diry = Math.random() * 5;
+            if (Math.random() * 100 <= 50)
+                dirx *= -1;
+            if (Math.random() * 100 <= 50)
+                diry *= -1;
+            let rot = Math.random() * 20;
+            let p = new Particle("pig1.png", this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, 5, dirx, diry, rot, 0.3);
+            p.register();
+        }
+    }
+    shake() {
+        this.sprite.scale.set(1 + this.hits / 20, 1 + this.hits / 20);
+    }
     update(delta) {
         super.update(delta);
         if (this.shootx != 0 || this.shooty != 0) {
@@ -317,7 +495,15 @@ class EntityPig extends EntityWalking {
             this.shootx = 0;
             this.shooty = 0;
         }
-        //this.IA();
+        this.shake();
+        if (this.hits > 10)
+            this.reset();
+        if (this.hits > 0) {
+            this.hits -= 0.3;
+        }
+        else
+            this.hits = 0;
+        this.IA();
     }
     hit(other) {
         let mx = 0;
@@ -328,12 +514,17 @@ class EntityPig extends EntityWalking {
             my = other.Vy() / Math.abs(other.Vy());
         this.shootx = 50 * mx;
         this.shooty = 50 * my;
+        this.hits += 1;
     }
     IA() {
         if (this.vx != 0 || this.vy != 0)
             return;
-        this.vx = Math.random() * 50;
-        this.vy = Math.random() * 50;
+        this.vx = Math.random() * 20;
+        this.vy = Math.random() * 20;
+        if (Math.random() * 100 <= 50)
+            this.vx *= -1;
+        if (Math.random() * 100 <= 50)
+            this.vy *= -1;
     }
     destroy() {
         Program.GetInstance().App().stage.removeChild(this.sprite);
@@ -501,6 +692,49 @@ class HelperEntity {
         }
     }
 }
+/**
+ * Created by clovis on 28/08/17.
+ */
+class Particle {
+    constructor(file, x, y, time, directionx, directiony, rotation, scale) {
+        this.registered = false;
+        this.sprite = PIXI.Sprite.fromFrame(file);
+        this.sprite.x = x;
+        this.sprite.y = y;
+        this.time = time;
+        if (rotation != null)
+            this.sprite.rotation.toFixed(rotation);
+        if (scale != null)
+            this.sprite.scale.set(scale, scale);
+        this.directionx = directionx;
+        this.directiony = directiony;
+    }
+    register() {
+        this.registered = true;
+        Program.GetInstance().particles[Particle.ID] = this;
+        Program.GetInstance().particleContainer.addChild(this.sprite);
+        this.id = Particle.ID;
+        Particle.ID++;
+    }
+    update(delta) {
+        this.sprite.x += this.directionx;
+        this.sprite.y += this.directiony;
+        this.sprite.alpha.toFixed(this.time);
+        this.time--;
+        if (this.time == 0) {
+            this.destroy();
+        }
+        console.log(this.time);
+    }
+    destroy() {
+        if (this.registered == false)
+            return;
+        Program.GetInstance().particleContainer.removeChild(this.sprite);
+        Program.GetInstance().particles[this.id] = null;
+        //console.log(Program.GetInstance().particles);
+    }
+}
+Particle.ID = 0;
 class SceneGame {
     constructor() {
         this.entities = [];
@@ -527,6 +761,12 @@ class SceneGame {
         this.entities.push(this.ball);
     }
     update(delta) {
+        for (let id in Program.GetInstance().particles) {
+            let particle = Program.GetInstance().particles[id];
+            if (particle == null)
+                continue;
+            particle.update(delta);
+        }
         this.entities.forEach((entity) => {
             let normal = null;
             // Vérification des collisions entre entités
