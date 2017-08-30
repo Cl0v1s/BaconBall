@@ -20,14 +20,14 @@ class SceneGame implements Scene
     private populate()
     {
         // Génération de la map
-        this.map = new GameMap();
+        this.map = new GameMap(this);
 
         // Creating players
-        this.player1 = new EntityPlayer(this, 50,50);
+        this.player1 = new EntityPlayer(this,"hero", 50,50);
         this.controllers.push(new ControllerKeyboard(this.player1,  90, 83, 81,68 ));
         this.entities.push(this.player1);
 
-        this.player2 = new EntityPlayer(this, 50,150);
+        this.player2 = new EntityPlayer(this,"badguy", 50,150);
         this.controllers.push(new ControllerKeyboard(this.player2,38,40, 37, 39));
         this.entities.push(this.player2);
 

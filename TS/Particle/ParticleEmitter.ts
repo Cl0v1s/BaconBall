@@ -5,9 +5,12 @@ interface ParticleEmitterConfiguration
     life : number;
     particleLife : number;
     particleSpeed : number;
+    frequency? : number;
     angleMax : number;
-    sizeRandom : boolean;
-    sizeMax : number;
+    sizeRandom? : boolean;
+    sizeMax? : number;
+    zone? : PIXI.Rectangle;
+
 }
 
 
@@ -23,11 +26,16 @@ class ParticleEmitter
     private life : number;
     private id : number;
 
+    private frequency : number = 0;
+
     private scene : SceneGame;
 
-    public static create(scene, texture : PIXI.Texture, config : ParticleEmitterConfiguration, totalParticles?  : number)
+    private callback : Function = null;
+
+    public static create(scene, texture : PIXI.Texture, config : ParticleEmitterConfiguration, callback? : Function, totalParticles?  : number)
     {
         let em = new ParticleEmitter();
+        em.callback = callback;
         em.scene = scene;
         em.config = config;
         em.life = em.config.life;
@@ -49,24 +57,43 @@ class ParticleEmitter
             return;
         let angle = Math.random() * this.config.angleMax;
         angle -= 90;
+
+        let x = this.config.x;
+        let y = this.config.y;
         
+        if(this.config.zone != null)
+        {
+            x += Math.floor(Math.random() * this.config.zone.width);
+            y += Math.floor(Math.random() * this.config.zone.height);            
+        }
+
+
         particle.set(
-            this.config.x, this.config.y, this.config.particleLife, this.config.particleSpeed, angle,
+            x, y, this.config.particleLife, this.config.particleSpeed, angle,
             this.config.sizeRandom, this.config.sizeMax
         );
         this.container.addChild(particle.sprite);
     }
 
-    public destroy()
+    public destroy(execute : boolean = true)
     {
+        if(this.callback != null && execute)
+            this.callback();
         this.scene.unregisterParticleEmitter(this.id);
         this.container.destroy({children: true});
     }
 
     public update(delta : number)
     {
-        this.life -= delta;
-        this.createParticle();
+        if(this.life != Infinity)
+            this.life -= delta;
+
+        this.frequency -= delta;
+        if(this.frequency <= 0)
+        {
+            this.createParticle();
+            this.frequency = this.config.frequency != null ? this.config.frequency : 0;
+        }   
         if(this.life < 0)
         {
             this.destroy();

@@ -23,6 +23,9 @@ class Config
         "WallH" : 2,
         "WallV" : 3,
 
+        "Weed" : 12,
+        "Rock" : 13,
+
         "Lava" : 25,
         "LavaTR" : 15,
         "LavaT" : 16,

@@ -26,6 +26,8 @@ Config.Tiles = {
     "Wall": 1,
     "WallH": 2,
     "WallV": 3,
+    "Weed": 12,
+    "Rock": 13,
     "Lava": 25,
     "LavaTR": 15,
     "LavaT": 16,
@@ -46,8 +48,9 @@ Config.Tiles = {
     "WaterL": 11
 };
 class GameMap {
-    constructor() {
+    constructor(scene) {
         this.grid = [];
+        this.scene = scene;
         this.container = new PIXI.Container();
         Program.GetInstance().App().stage.addChild(this.container);
         this.width = Math.floor(Program.GetInstance().App().renderer.width / Config.TileSize);
@@ -67,7 +70,6 @@ class GameMap {
         let lava = this.generateLava();
         this.generateWater(lava);
         this.generateSprites();
-        console.log(this.grid);
     }
     generateSprites() {
         let sprite;
@@ -81,9 +83,11 @@ class GameMap {
                 tile = this.polishLava(tile, i, u);
                 // Adoucissement de l'eau
                 tile = this.polishWater(tile, i, u);
+                // Variation du sol
+                tile = this.randomizeGround(tile, i, u);
                 if (tile == Config.Tiles.Ground)
                     continue;
-                console.log(tile);
+                this.createEmitter(tile, i, u);
                 sprite = PIXI.Sprite.fromFrame("tile" + (tile + 1) + ".png");
                 sprite.x = i * Config.TileSize;
                 sprite.y = u * Config.TileSize;
@@ -91,6 +95,31 @@ class GameMap {
             }
             this.grid.push(row);
         }
+    }
+    createEmitter(tile, x, y) {
+        if (tile == Config.Tiles.Lava) {
+            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle3.png"), {
+                x: x * Config.TileSize,
+                y: y * Config.TileSize,
+                life: Infinity,
+                particleLife: 30,
+                particleSpeed: 0.1,
+                angleMax: 0,
+                sizeRandom: true,
+                sizeMax: 3,
+                frequency: 20,
+                zone: new PIXI.Rectangle(0, 0, Config.TileSize, Config.TileSize)
+            });
+        }
+    }
+    randomizeGround(tile, x, y) {
+        if (tile != Config.Tiles.Ground)
+            return tile;
+        if (Math.random() * 100 <= 10)
+            tile = Config.Tiles.Weed;
+        else if (Math.random() * 100 <= 30)
+            tile = Config.Tiles.Rock;
+        return tile;
     }
     polishWalls(tile, x, y) {
         if (tile == Config.Tiles.WallH &&
@@ -215,7 +244,7 @@ class GameMap {
     }
     generateWater(force) {
         let gen = false;
-        let tries = 3;
+        let tries = 10;
         while (gen == false) {
             tries -= 1;
             if (tries < 0)
@@ -227,14 +256,14 @@ class GameMap {
             for (let i = 0; i < width; i++) {
                 for (let u = 0; u < height; u++) {
                     if (this.grid[x + i] != null && this.grid[x + i][y + u] == Config.Tiles.Ground) {
-                        if (this.grid[x][y - 1] == Config.Tiles.Lava || this.grid[x][y - 2] == Config.Tiles.Lava ||
-                            this.grid[x][y + 1] == Config.Tiles.Lava || this.grid[x][y + 2] == Config.Tiles.Lava ||
-                            (this.grid[x - 1] != null && this.grid[x - 1][y] == Config.Tiles.Lava) || (this.grid[x - 2] != null && this.grid[x - 2][y] == Config.Tiles.Lava) ||
-                            (this.grid[x + 1] != null && this.grid[x + 1][y] == Config.Tiles.Lava) || (this.grid[x + 2] != null && this.grid[x + 2][y] == Config.Tiles.Lava) ||
-                            (this.grid[x - 1] != null && this.grid[x - 1][y - 1] == Config.Tiles.Lava) || (this.grid[x - 2] != null && this.grid[x - 2][y - 2] == Config.Tiles.Lava) ||
-                            (this.grid[x + 1] != null && this.grid[x + 1][y - 1] == Config.Tiles.Lava) || (this.grid[x + 2] != null && this.grid[x + 2][y - 2] == Config.Tiles.Lava) ||
-                            (this.grid[x - 1] != null && this.grid[x - 1][y + 1] == Config.Tiles.Lava) || (this.grid[x - 2] != null && this.grid[x - 2][y + 2] == Config.Tiles.Lava) ||
-                            (this.grid[x + 1] != null && this.grid[x + 1][y + 1] == Config.Tiles.Lava) || (this.grid[x + 2] != null && this.grid[x + 2][y + 2] == Config.Tiles.Lava))
+                        if (this.grid[x][y - 2] == Config.Tiles.Lava || this.grid[x][y - 3] == Config.Tiles.Lava ||
+                            this.grid[x][y + 2] == Config.Tiles.Lava || this.grid[x][y + 3] == Config.Tiles.Lava ||
+                            (this.grid[x - 2] != null && this.grid[x - 2][y] == Config.Tiles.Lava) || (this.grid[x - 3] != null && this.grid[x - 3][y] == Config.Tiles.Lava) ||
+                            (this.grid[x + 2] != null && this.grid[x + 2][y] == Config.Tiles.Lava) || (this.grid[x + 3] != null && this.grid[x + 3][y] == Config.Tiles.Lava) ||
+                            (this.grid[x - 2] != null && this.grid[x - 2][y - 2] == Config.Tiles.Lava) || (this.grid[x - 3] != null && this.grid[x - 3][y - 3] == Config.Tiles.Lava) ||
+                            (this.grid[x + 2] != null && this.grid[x + 2][y - 2] == Config.Tiles.Lava) || (this.grid[x + 3] != null && this.grid[x + 3][y - 3] == Config.Tiles.Lava) ||
+                            (this.grid[x - 2] != null && this.grid[x - 2][y + 2] == Config.Tiles.Lava) || (this.grid[x - 3] != null && this.grid[x - 3][y + 3] == Config.Tiles.Lava) ||
+                            (this.grid[x + 2] != null && this.grid[x + 2][y + 2] == Config.Tiles.Lava) || (this.grid[x + 3] != null && this.grid[x + 3][y + 3] == Config.Tiles.Lava))
                             continue;
                         this.grid[x + i][y + u] = Config.Tiles.Water;
                         gen = true;
@@ -274,6 +303,7 @@ class Program {
     }
     load() {
         PIXI.loader.add("assets/animations/Hero.json")
+            .add("assets/animations/Badguy.json")
             .add("assets/animations/Pig.json")
             .add("assets/animations/Tileset.json")
             .add("assets/images/GUI/StatUI_background.png")
@@ -535,14 +565,15 @@ class EntityPig extends EntityWalking {
 }
 /// <reference path="EntityWalking.ts" />
 class EntityPlayer extends EntityWalking {
-    constructor(scene, x, y) {
+    constructor(scene, file, x, y) {
         super();
         this.life = Config.PlayerLife;
         this.onFire = 0;
+        this.file = file;
         this.scene = scene;
         let frames = [];
         for (let i = 1; i < 17; i++) {
-            frames.push(PIXI.Texture.fromFrame("hero" + i + ".png"));
+            frames.push(PIXI.Texture.fromFrame(file + i + ".png"));
         }
         this.sprite = new PIXI.extras.AnimatedSprite(frames);
         this.sprite.x = x;
@@ -556,64 +587,91 @@ class EntityPlayer extends EntityWalking {
     Life() {
         return this.life;
     }
+    updateEmitter() {
+        if (this.emitter != null) {
+            this.emitter.config.x = this.sprite.x;
+            this.emitter.config.y = this.sprite.y;
+            if (this.onFire > 0)
+                this.emitter.config.life = this.onFire;
+        }
+    }
     update(delta) {
         super.update(delta);
+        this.updateEmitter();
         if (this.onFire > 0) {
             this.onFire -= delta;
             this.life -= Config.FireDamage * delta;
-            if (this.emitter != null) {
-                this.emitter.config.x = this.sprite.x + this.sprite.width / 2;
-                this.emitter.config.y = this.sprite.y + this.sprite.height / 2;
-                this.emitter.config.life = this.onFire;
-            }
         }
         if (this.life <= 0)
             this.reset();
     }
+    setEmitter(emitter) {
+        if (this.emitter != null) {
+            this.emitter.destroy(false);
+        }
+        this.emitter = emitter;
+    }
     setOnFire(value) {
-        this.onFire = value ? Config.PlayerFireTime : 0;
-        if (value == false && this.emitter != null) {
-            // extinction du feu 
-            this.emitter.destroy();
-            this.emitter = null;
-            // en faisant de la fumée
-            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
-                x: this.sprite.x + this.sprite.width / 2,
-                y: this.sprite.y + this.sprite.height / 2,
-                life: 50,
+        if (this.onFire > 0 && value == false) {
+            this.setEmitter(ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
+                x: this.sprite.x,
+                y: this.sprite.y,
+                life: 1000,
                 particleLife: 40,
                 particleSpeed: 1,
                 angleMax: 45,
                 sizeRandom: true,
-                sizeMax: 4
-            });
+                sizeMax: 4,
+                zone: new PIXI.Rectangle(0, 0, this.sprite.width, this.sprite.height)
+            }, () => {
+                this.setEmitter(null);
+            }));
         }
-        if (value == false || this.emitter != null)
+        this.onFire = value ? Config.PlayerFireTime : 0;
+        if (value == false)
             return;
-        this.emitter = ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle1.png"), {
-            x: this.sprite.x + this.sprite.width / 2,
-            y: this.sprite.y + this.sprite.height / 2,
+        this.setEmitter(ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle1.png"), {
+            x: this.sprite.x,
+            y: this.sprite.y,
             life: Config.PlayerFireTime,
             particleLife: 25,
             particleSpeed: 2,
             angleMax: 20,
             sizeRandom: false,
-            sizeMax: null
-        });
+            sizeMax: null,
+            zone: new PIXI.Rectangle(0, 0, this.sprite.width, this.sprite.height)
+        }));
     }
     reset() {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
-        if (this.emitter != null) {
-            this.emitter.destroy();
-            this.emitter = null;
-        }
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file + "1.png"), {
+            x: this.sprite.x + this.sprite.width / 2,
+            y: this.sprite.y + this.sprite.height / 2,
+            life: 10,
+            particleLife: 10,
+            particleSpeed: 5,
+            angleMax: 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
+        this.setEmitter(null);
         this.life = Config.PlayerLife;
         this.sprite.x = 50;
         this.sprite.y = 50;
         this.onFire = 0;
         this.vx = 0;
         this.vy = 0;
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file + "1.png"), {
+            x: this.sprite.x + this.sprite.width / 2,
+            y: this.sprite.y + this.sprite.height / 2,
+            life: 10,
+            particleLife: 10,
+            particleSpeed: 5,
+            angleMax: 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
     }
     destroy() {
         Program.GetInstance().App().stage.removeChild(this.sprite);
@@ -822,8 +880,9 @@ class Particle {
         this.sprite = new PIXI.Sprite(texture);
     }
     set(x, y, life, speed, angle, sizeRandom, sizeMax) {
-        this.sprite.x = x - this.sprite.width / 2;
-        this.sprite.y = y - this.sprite.height / 2;
+        this.sprite.anchor.set(this.sprite.width / 2, this.sprite.height / 2);
+        this.sprite.x = x;
+        this.sprite.y = y;
         this.originalLife = this.life = life;
         let radians = angle * Math.PI / 180;
         let modifier = Math.random();
@@ -858,9 +917,12 @@ class ParticleEmitter {
     constructor() {
         this.particlePool = [];
         this.totalParticles = 25;
+        this.frequency = 0;
+        this.callback = null;
     }
-    static create(scene, texture, config, totalParticles) {
+    static create(scene, texture, config, callback, totalParticles) {
         let em = new ParticleEmitter();
+        em.callback = callback;
         em.scene = scene;
         em.config = config;
         em.life = em.config.life;
@@ -879,16 +941,29 @@ class ParticleEmitter {
             return;
         let angle = Math.random() * this.config.angleMax;
         angle -= 90;
-        particle.set(this.config.x, this.config.y, this.config.particleLife, this.config.particleSpeed, angle, this.config.sizeRandom, this.config.sizeMax);
+        let x = this.config.x;
+        let y = this.config.y;
+        if (this.config.zone != null) {
+            x += Math.floor(Math.random() * this.config.zone.width);
+            y += Math.floor(Math.random() * this.config.zone.height);
+        }
+        particle.set(x, y, this.config.particleLife, this.config.particleSpeed, angle, this.config.sizeRandom, this.config.sizeMax);
         this.container.addChild(particle.sprite);
     }
-    destroy() {
+    destroy(execute = true) {
+        if (this.callback != null && execute)
+            this.callback();
         this.scene.unregisterParticleEmitter(this.id);
         this.container.destroy({ children: true });
     }
     update(delta) {
-        this.life -= delta;
-        this.createParticle();
+        if (this.life != Infinity)
+            this.life -= delta;
+        this.frequency -= delta;
+        if (this.frequency <= 0) {
+            this.createParticle();
+            this.frequency = this.config.frequency != null ? this.config.frequency : 0;
+        }
         if (this.life < 0) {
             this.destroy();
             return;
@@ -924,12 +999,12 @@ class SceneGame {
     }
     populate() {
         // Génération de la map
-        this.map = new GameMap();
+        this.map = new GameMap(this);
         // Creating players
-        this.player1 = new EntityPlayer(this, 50, 50);
+        this.player1 = new EntityPlayer(this, "hero", 50, 50);
         this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
         this.entities.push(this.player1);
-        this.player2 = new EntityPlayer(this, 50, 150);
+        this.player2 = new EntityPlayer(this, "badguy", 50, 150);
         this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
         this.entities.push(this.player2);
         // Creating pig

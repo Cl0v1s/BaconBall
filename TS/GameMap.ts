@@ -5,8 +5,11 @@ class GameMap
     private width : number;
     private height : number;
 
-    constructor()
+    private scene : SceneGame;
+    constructor(scene : SceneGame)
     {
+        this.scene = scene;
+
         this.container = new PIXI.Container();
         Program.GetInstance().App().stage.addChild(this.container);
 
@@ -35,7 +38,6 @@ class GameMap
         this.generateWater(lava);
 
         this.generateSprites();
-        console.log(this.grid);
     }
 
     private generateSprites() : void
@@ -56,11 +58,12 @@ class GameMap
                 tile = this.polishLava(tile, i ,u);
                 // Adoucissement de l'eau
                 tile = this.polishWater(tile, i ,u);
-
+                // Variation du sol
+                tile = this.randomizeGround(tile, i ,u);
 
                 if(tile == Config.Tiles.Ground)
                     continue;
-                console.log(tile);
+                this.createEmitter(tile, i, u);
                 sprite = PIXI.Sprite.fromFrame("tile"+(tile+1)+".png");
                 sprite.x = i * Config.TileSize;
                 sprite.y = u * Config.TileSize;
@@ -68,6 +71,38 @@ class GameMap
             }
             this.grid.push(row);
         }
+    }
+
+    private createEmitter(tile, x,y) : void 
+    {
+        if(tile == Config.Tiles.Lava)
+        {
+            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle3.png"), {
+                x : x * Config.TileSize,
+                y : y * Config.TileSize,
+                life : Infinity,
+                particleLife : 30,
+                particleSpeed : 0.1,
+                angleMax : 0,
+                sizeRandom: true,
+                sizeMax: 3,
+                frequency : 20,
+                zone : new PIXI.Rectangle(0,0,Config.TileSize, Config.TileSize)
+            });
+        }
+    }
+
+    private randomizeGround(tile, x,y) : number
+    {
+        if(tile != Config.Tiles.Ground)
+            return tile;
+
+        if(Math.random() * 100 <= 10)
+            tile = Config.Tiles.Weed;
+        else if(Math.random() * 100 <= 30)
+            tile = Config.Tiles.Rock;
+
+        return tile;
     }
 
     private polishWalls(tile, x, y) : number
@@ -228,7 +263,7 @@ class GameMap
     private generateWater(force : boolean) : void
     {
         let gen = false;
-        let tries = 3;
+        let tries = 10;
         while(gen == false) {
             tries -= 1;
             if(tries < 0)
@@ -240,14 +275,14 @@ class GameMap
             for (let i = 0; i < width; i++) {
                 for (let u = 0; u < height; u++) {
                     if (this.grid[x + i] != null && this.grid[x + i][y + u] == Config.Tiles.Ground) {
-                        if( this.grid[x][y - 1] == Config.Tiles.Lava || this.grid[x][y - 2 ] == Config.Tiles.Lava ||
-                            this.grid[x][y + 1] == Config.Tiles.Lava || this.grid[x][y + 2 ] == Config.Tiles.Lava ||
-                            ( this.grid[x - 1] != null &&  this.grid[x -1][y] == Config.Tiles.Lava) || (this.grid[x-2] != null && this.grid[x - 2][y ] == Config.Tiles.Lava) ||
-                            ( this.grid[x + 1] != null && this.grid[x + 1][y] == Config.Tiles.Lava) ||  ( this.grid[x + 2] != null && this.grid[x + 2][y] == Config.Tiles.Lava )||
-                            ( this.grid[x - 1] != null &&this.grid[x - 1][y - 1] == Config.Tiles.Lava) ||  ( this.grid[x - 2] != null &&this.grid[x - 2][y - 2 ] == Config.Tiles.Lava )||
-                            ( this.grid[x + 1] != null &&this.grid[x + 1][y - 1] == Config.Tiles.Lava) ||  ( this.grid[x +2] != null &&this.grid[x + 2][y - 2 ] == Config.Tiles.Lava )||
-                            ( this.grid[x - 1] != null &&this.grid[x - 1][y + 1] == Config.Tiles.Lava) ||  ( this.grid[x -2] != null &&this.grid[x - 2][y + 2 ] == Config.Tiles.Lava )||
-                            ( this.grid[x + 1] != null &&this.grid[x + 1][y + 1] == Config.Tiles.Lava) ||  ( this.grid[x +2] != null &&this.grid[x + 2][y + 2 ] == Config.Tiles.Lava)
+                        if( this.grid[x][y - 2] == Config.Tiles.Lava || this.grid[x][y - 3 ] == Config.Tiles.Lava ||
+                            this.grid[x][y + 2] == Config.Tiles.Lava || this.grid[x][y + 3 ] == Config.Tiles.Lava ||
+                            ( this.grid[x - 2] != null &&  this.grid[x -2][y] == Config.Tiles.Lava) || (this.grid[x-3] != null && this.grid[x - 3][y ] == Config.Tiles.Lava) ||
+                            ( this.grid[x + 2] != null && this.grid[x + 2][y] == Config.Tiles.Lava) ||  ( this.grid[x + 3] != null && this.grid[x + 3][y] == Config.Tiles.Lava )||
+                            ( this.grid[x - 2] != null &&this.grid[x - 2][y - 2] == Config.Tiles.Lava) ||  ( this.grid[x - 3] != null &&this.grid[x - 3][y - 3 ] == Config.Tiles.Lava )||
+                            ( this.grid[x + 2] != null &&this.grid[x + 2][y - 2] == Config.Tiles.Lava) ||  ( this.grid[x +3] != null &&this.grid[x + 3][y - 3 ] == Config.Tiles.Lava )||
+                            ( this.grid[x - 2] != null &&this.grid[x - 2][y + 2] == Config.Tiles.Lava) ||  ( this.grid[x -3] != null &&this.grid[x - 3][y + 3 ] == Config.Tiles.Lava )||
+                            ( this.grid[x + 2] != null &&this.grid[x + 2][y + 2] == Config.Tiles.Lava) ||  ( this.grid[x +3] != null &&this.grid[x + 3][y + 3 ] == Config.Tiles.Lava)
                         )
                             continue;
 

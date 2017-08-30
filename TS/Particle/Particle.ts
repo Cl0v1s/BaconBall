@@ -18,8 +18,9 @@ class Particle
 
     public set(x : number, y : number, life : number, speed : number, angle : number, sizeRandom : boolean, sizeMax : number)
     {
-        this.sprite.x = x - this.sprite.width / 2;
-        this.sprite.y = y - this.sprite.height / 2;
+        this.sprite.anchor.set(this.sprite.width /2, this.sprite.height/2);
+        this.sprite.x = x;
+        this.sprite.y = y;
 
         this.originalLife = this.life = life;
 

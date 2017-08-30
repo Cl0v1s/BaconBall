@@ -46,6 +46,7 @@ class Program
     private load() : void
     {
         PIXI.loader.add("assets/animations/Hero.json")
+                    .add("assets/animations/Badguy.json")
                     .add("assets/animations/Pig.json")
                     .add("assets/animations/Tileset.json")
                     .add("assets/images/GUI/StatUI_background.png")

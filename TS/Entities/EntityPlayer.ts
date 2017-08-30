@@ -7,15 +7,17 @@ class EntityPlayer extends EntityWalking
     private life : number = Config.PlayerLife;
     private onFire : number = 0;
     private emitter : ParticleEmitter;
+    private file : string;
 
-    constructor(scene : Scene,x : number, y : number)
+    constructor(scene : Scene, file : string,  x : number, y : number)
     {
         super();
+        this.file = file;
         this.scene = scene;
         let frames = [];
         for(let i = 1; i < 17; i++)
         {
-            frames.push(PIXI.Texture.fromFrame("hero"+i+".png"));
+            frames.push(PIXI.Texture.fromFrame(file+i+".png"));
         }
         this.sprite = new PIXI.extras.AnimatedSprite(frames);
         this.sprite.x = x;
@@ -34,55 +36,73 @@ class EntityPlayer extends EntityWalking
         return this.life;
     }
 
+    private updateEmitter()
+    {
+        if(this.emitter != null)
+        {
+            this.emitter.config.x = this.sprite.x;
+            this.emitter.config.y = this.sprite.y;
+            if(this.onFire > 0)
+                this.emitter.config.life = this.onFire;
+        }
+    }
+
     public update(delta : number): void {
         super.update(delta);
+        this.updateEmitter();
         if(this.onFire > 0)
         {
             this.onFire -= delta;
             this.life -= Config.FireDamage * delta;
-            if(this.emitter != null)
-                {
-            this.emitter.config.x = this.sprite.x + this.sprite.width / 2;
-            this.emitter.config.y = this.sprite.y + this.sprite.height / 2;
-            this.emitter.config.life = this.onFire;
-                }
         }
         if(this.life <= 0)
             this.reset();
     }
 
+    public setEmitter(emitter : ParticleEmitter) : void 
+    {
+        if(this.emitter != null)
+        {
+            this.emitter.destroy(false);
+        }
+        this.emitter = emitter;
+    }
+
     public setOnFire(value : boolean) : void
     {
-        this.onFire = value ? Config.PlayerFireTime : 0;
-        if(value == false && this.emitter != null)
+        if(this.onFire > 0 && value == false)
         {
-            // extinction du feu 
-            this.emitter.destroy();
-            this.emitter = null;
-            // en faisant de la fumée
-            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
-                x : this.sprite.x + this.sprite.width / 2,
-                y : this.sprite.y + this.sprite.height / 2,
-                life : 50,
-                particleLife : 40,
-                particleSpeed : 1,
-                angleMax : 45,
-                sizeRandom: true,
-                sizeMax: 4
-            });
+            this.setEmitter(
+                ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
+                    x : this.sprite.x,
+                    y : this.sprite.y,
+                    life : 1000,
+                    particleLife : 40,
+                    particleSpeed : 1,
+                    angleMax : 45,
+                    sizeRandom: true,
+                    sizeMax: 4,
+                    zone : new PIXI.Rectangle(0,0,this.sprite.width, this.sprite.height)
+            
+                }, () => {
+                    this.setEmitter(null);
+                }));
         }
-        if(value == false || this.emitter != null)
+        this.onFire = value ? Config.PlayerFireTime : 0;
+        if(value == false)
             return;
-        this.emitter = ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle1.png"), {
-            x : this.sprite.x + this.sprite.width / 2,
-            y : this.sprite.y + this.sprite.height / 2,
+        this.setEmitter(
+            ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle1.png"), {
+            x : this.sprite.x,
+            y : this.sprite.y,
             life : Config.PlayerFireTime,
             particleLife : 25,
             particleSpeed : 2,
             angleMax : 20,
             sizeRandom: false,
-            sizeMax: null
-        })
+            sizeMax: null, 
+            zone : new PIXI.Rectangle(0,0,this.sprite.width, this.sprite.height)
+        }));
 
     }
 
@@ -90,17 +110,33 @@ class EntityPlayer extends EntityWalking
     {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
-        if(this.emitter != null)
-        {
-            this.emitter.destroy();
-            this.emitter = null;
-        }
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file+"1.png"), {
+            x : this.sprite.x + this.sprite.width / 2,
+            y : this.sprite.y + this.sprite.height / 2,
+            life : 10,
+            particleLife : 10,
+            particleSpeed : 5,
+            angleMax : 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
+        this.setEmitter(null);
         this.life = Config.PlayerLife;
         this.sprite.x = 50;
         this.sprite.y = 50;
         this.onFire = 0;
         this.vx = 0;
         this.vy = 0;
+        ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file+"1.png"), {
+            x : this.sprite.x + this.sprite.width / 2,
+            y : this.sprite.y + this.sprite.height / 2,
+            life : 10,
+            particleLife : 10,
+            particleSpeed : 5,
+            angleMax : 360,
+            sizeRandom: false,
+            sizeMax: null
+        });
     }
 
     public destroy(): void {
