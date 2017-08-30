@@ -2,6 +2,7 @@ abstract class EntityWalking implements Entity {
 
     sprite: PIXI.extras.AnimatedSprite;
 
+    solid : boolean = true;
     scene : Scene;
     vx: number = 0;
     vy: number = 0;
@@ -11,6 +12,11 @@ abstract class EntityWalking implements Entity {
 
     constructor() {
 
+    }
+
+    public reset() : void 
+    {
+        
     }
 
     public hit(other : Entity) : void

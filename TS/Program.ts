@@ -52,6 +52,7 @@ class Program
                     .add("assets/images/GUI/StatUI_background.png")
                     .add("assets/images/GUI/Heart.png")
                     .add("assets/animations/Particles.json")
+                    .add("assets/images/Elements/Hole.png")
                     .load(() => { this.setup(); });
     }
 

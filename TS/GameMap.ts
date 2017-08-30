@@ -51,7 +51,7 @@ class GameMap
                 let tile = (this.grid[i][u]);
 
                 // Adoucissement des murs
-                tile = this.polishWalls(tile, i, u);
+                //tile = this.polishWalls(tile, i, u);
 
 
                 // Adoucissement de la lave
@@ -243,7 +243,7 @@ class GameMap
     {
         let gen = false;
         let x = Math.floor(Math.random() * (this.height - 1) + 1);
-        let y = Math.floor(Math.random() * (this.height - 1) + 1);
+        let y = Math.floor(Math.random() * (this.height - 7) + 3);
         let width = Math.floor(Math.random() * 3 + 1);
         let height = Math.floor(Math.random() * 3 + 1);
         for(let i =0 ; i < width ;i ++)
@@ -269,7 +269,7 @@ class GameMap
             if(tries < 0)
                 return;
             let x = Math.floor(Math.random() * (this.height - 1) + 1);
-            let y = Math.floor(Math.random() * (this.height - 1) + 1);
+            let y = Math.floor(Math.random() * (this.height - 7) + 3);
             let width = Math.floor(Math.random() * 3 + 1);
             let height = Math.floor(Math.random() * 3 + 1);
             for (let i = 0; i < width; i++) {

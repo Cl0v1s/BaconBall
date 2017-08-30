@@ -5,6 +5,7 @@ interface Entity
 {
     sprite : PIXI.Sprite;
     mass : number;
+    solid : boolean;
 
     scene : Scene;
 
@@ -15,6 +16,7 @@ interface Entity
     destroy() : void;
 
     hit(other : Entity) : void;
+    reset() : void;
 
     Vx() : number;
     Vy() : number;

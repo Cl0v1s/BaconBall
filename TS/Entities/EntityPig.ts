@@ -8,6 +8,9 @@ class EntityPig extends EntityWalking
     private shooty : number = 0;
     private hits : number = 0;
 
+    private respawnx : number;
+    private respawny : number;
+
     constructor(scene : Scene,x : number, y : number)
     {
         super();
@@ -30,7 +33,7 @@ class EntityPig extends EntityWalking
         this.mass = 0.90;
     }
 
-    private reset() : void
+    public reset() : void
     {
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
             x : this.sprite.x + this.sprite.width / 2,
@@ -42,8 +45,8 @@ class EntityPig extends EntityWalking
             sizeRandom: false,
             sizeMax: null
         });
-        this.sprite.x = Program.GetInstance().App().renderer.width / 2 - this.sprite.width/2;
-        this.sprite.y = Program.GetInstance().App().renderer.height / 2 - this.sprite.height / 2;
+        this.sprite.x = this.respawnx;
+        this.sprite.y = this.respawny;
         this.vx = 0;
         this.vy = 0;
         this.hits = 0;
@@ -57,6 +60,12 @@ class EntityPig extends EntityWalking
             sizeRandom: false,
             sizeMax: null
         });
+    }
+
+    public setRespawn(x : number, y : number)
+    {
+        this.respawnx = x;
+        this.respawny = y;
     }
 
     private shake() : void
@@ -107,6 +116,19 @@ class EntityPig extends EntityWalking
     {
         if(this.vx != 0 || this.vy != 0)
             return;
+
+        if(this.sprite.y+this.sprite.height >= Program.GetInstance().App().renderer.height - 64*2)
+        {
+            this.vy = -20;
+            return;
+        }
+
+        if(this.sprite.y <= 64*2)
+        {
+                this.vy = 20;
+                return;
+        }
+
         this.vx = Math.random() * 20;
         this.vy = Math.random() * 20;
         if(Math.random() * 100 <= 50)

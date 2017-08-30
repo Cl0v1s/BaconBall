@@ -9,6 +9,9 @@ class EntityPlayer extends EntityWalking
     private emitter : ParticleEmitter;
     private file : string;
 
+    private respawnx : number = 0; 
+    private respawny : number = 0;
+
     constructor(scene : Scene, file : string,  x : number, y : number)
     {
         super();
@@ -29,6 +32,12 @@ class EntityPlayer extends EntityWalking
         Program.GetInstance().App().stage.addChild(this.sprite);
 
         this.mass = 0.3;
+    }
+
+    public setRespawn(x : number, y : number)
+    {
+        this.respawnx = x;
+        this.respawny = y;
     }
 
     public Life() : number
@@ -76,7 +85,7 @@ class EntityPlayer extends EntityWalking
                 ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("particle2.png"), {
                     x : this.sprite.x,
                     y : this.sprite.y,
-                    life : 1000,
+                    life : 10,
                     particleLife : 40,
                     particleSpeed : 1,
                     angleMax : 45,
@@ -106,7 +115,7 @@ class EntityPlayer extends EntityWalking
 
     }
 
-    private reset() : void
+    public reset() : void
     {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
@@ -122,8 +131,8 @@ class EntityPlayer extends EntityWalking
         });
         this.setEmitter(null);
         this.life = Config.PlayerLife;
-        this.sprite.x = 50;
-        this.sprite.y = 50;
+        this.sprite.x = this.respawnx;
+        this.sprite.y = this.respawny;
         this.onFire = 0;
         this.vx = 0;
         this.vy = 0;
