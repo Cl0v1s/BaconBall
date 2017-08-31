@@ -92,7 +92,7 @@ class EntityPig extends EntityWalking
         else
             this.hits = 0;
 
-        //this.IA();
+        this.IA();
     }
 
     public hit(other : Entity) : void

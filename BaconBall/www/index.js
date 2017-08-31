@@ -416,64 +416,114 @@ class ControllerKeyboard {
 }
 class ControllerTouch {
     constructor(player, bounds) {
-        this.lastTouch = null;
         this.player = player;
         this.bounds = bounds;
         document.getElementById("touch").addEventListener("touchstart", (e) => {
             for (let i = 0; i < e.changedTouches.length; i++)
-                this.mousedown(e.changedTouches[i]);
+                this.start(e.changedTouches[i]);
         }, true);
+        document.getElementById("touch").addEventListener("touchmove", (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++)
+                this.move(e.changedTouches[i]);
+        }, true);
+        /*document.getElementById("touch").addEventListener("touchend", (e) => {
+            for(let i = 0; i < e.changedTouches.length; i++)
+                this.end(e.changedTouches[i]);
+        }, true);
+        document.getElementById("touch").addEventListener("touchcancel", (e) => {
+            for(let i = 0; i < e.changedTouches.length; i++)
+                this.end(e.changedTouches[i]);
+        }, true);*/
     }
-    mouseup(e = null) {
-        if (e != null && e.identifier != this.lastTouch)
-            return;
-        clearInterval(this.timer);
-        this.timer = null;
-        this.lastTouch = null;
-    }
-    mousedown(e) {
+    start(e) {
         let coords = {
             x: e.clientX,
             y: e.clientY
         };
-        this.lastTouch = e.identifier;
         if (!(coords.x >= this.bounds.x && coords.x <= this.bounds.x + this.bounds.width && coords.y >= this.bounds.y && coords.y <= this.bounds.y + this.bounds.height))
             return;
-        if (coords.x >= this.bounds.x + this.bounds.width / 3 && coords.x <= this.bounds.x + this.bounds.width - this.bounds.width / 3 && coords.y < this.bounds.y + this.bounds.height / 2) {
-            this.up();
+        this.touch = e;
+    }
+    move(e) {
+        if (this.touch == null || e.identifier != this.touch.identifier)
             return;
+        let coords = {
+            x: e.clientX - this.touch.clientX,
+            y: e.clientY - this.touch.clientY
+        };
+        console.log(coords);
+        if (Math.abs(coords.x) > Math.abs(coords.y)) {
+            if (coords.x < 0)
+                this.left();
+            else if (coords.x > 0)
+                this.right();
         }
-        if (coords.x >= this.bounds.x + this.bounds.width / 3 && coords.x <= this.bounds.x + this.bounds.width - this.bounds.width / 3 && coords.y > this.bounds.y + this.bounds.height / 2) {
-            this.down();
+        else if (Math.abs(coords.x) < Math.abs(coords.y)) {
+            if (coords.y < 0)
+                this.up();
+            else if (coords.y > 0)
+                this.down();
+            /*console.log(this.bounds.y >= Program.GetInstance().App().renderer.height / 2);
+            if(this.bounds.y >= Program.GetInstance().App().renderer.height / 2)
+            {
+                if(coords.y < 0)
+                    this.up();
+                else if(coords.y > 0)
+                    this.down();
+            }
+            else
+                {
+                    if(coords.y > 0)
+                        this.up();
+                    else if(coords.y < 0)
+                        this.down();
+                }*/
+        }
+        /*   {
+               this.up();
+               return;
+           }
+           {
+               this.down();
+               return;
+           }
+           {
+              this.right();
+              return;
+           }
+           {
+               this.left();
+               return;
+           }*/
+    }
+    end(e = null) {
+        console.log(e);
+        if (e != null && (this.touch != null && this.touch.identifier != e.identifier))
             return;
-        }
-        if (coords.x >= this.bounds.x + this.bounds.width / 3) {
-            this.right();
-        }
-        if (coords.x <= this.bounds.x + this.bounds.width - this.bounds.width / 3) {
-            this.left();
-        }
+        this.touch = null;
+        clearInterval(this.timer);
+        this.timer = null;
     }
     left() {
-        this.mouseup();
+        this.end();
         this.timer = setInterval(() => {
             this.player.moveLeft();
         }, 20);
     }
     right() {
-        this.mouseup();
+        this.end();
         this.timer = setInterval(() => {
             this.player.moveRight();
         }, 20);
     }
     up() {
-        this.mouseup();
+        this.end();
         this.timer = setInterval(() => {
             this.player.moveUp();
         }, 20);
     }
     down() {
-        this.mouseup();
+        this.end();
         this.timer = setInterval(() => {
             this.player.moveDown();
         }, 20);
@@ -672,8 +722,17 @@ class EntityPig extends EntityWalking {
             mx = other.Vx() / Math.abs(other.Vx());
         if (other.Vy() != 0)
             my = other.Vy() / Math.abs(other.Vy());
+        if (mx == 0 && other.sprite.x + other.sprite.width / 2 < this.sprite.x)
+            mx = 0.5;
+        else if (mx == 0 && other.sprite.x + other.sprite.width / 2 > this.sprite.x + this.sprite.width)
+            mx = -0.5;
+        if (my == 0 && other.sprite.y + other.sprite.height / 2 < this.sprite.y)
+            my = 0.5;
+        else if (my == 0 && other.sprite.y + other.sprite.height / 2 > this.sprite.y + this.sprite.height)
+            my = -0.5;
         this.shootx = 50 * mx;
         this.shooty = 50 * my;
+        this.hits += 1;
         this.hits += 1;
     }
     IA() {
