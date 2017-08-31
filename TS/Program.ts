@@ -35,13 +35,16 @@ class Program
 
     constructor()
     {
-        this.app = new PIXI.Application(384, 608, {backgroundColor : 0x282d44});
+        this.app = new PIXI.Application(Config.Width, Config.Height, {backgroundColor : 0x282d44});
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-        document.body.appendChild(this.app.view);
+        document.getElementById("touch").appendChild(this.app.view);
         this.load();
-
-
+        
+        this.app.renderer.autoResize = true;
+        this.app.renderer.resize(window.innerWidth, window.innerHeight);
+        
     }
+
 
     private load() : void
     {

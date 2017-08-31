@@ -3,6 +3,10 @@
  */
 class Config
 {
+    public static Width : number = 384;
+    public static Height : number = 608;
+
+
     public static AirDensity : number = 0.3;
 
     public static PlayerLife : number = 3;

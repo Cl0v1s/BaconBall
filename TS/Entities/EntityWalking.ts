@@ -59,7 +59,12 @@ abstract class EntityWalking implements Entity {
         this.setFrame();
     }
 
-    private setFrame(): void {
+    public bump()
+    {
+        
+    }
+
+    protected setFrame(): void {
         if (this.vy == 0 && this.vx == 0) {
             this.sprite.stop();
             return;

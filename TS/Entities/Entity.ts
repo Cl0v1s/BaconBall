@@ -17,6 +17,7 @@ interface Entity
 
     hit(other : Entity) : void;
     reset() : void;
+    bump() : void;
 
     Vx() : number;
     Vy() : number;

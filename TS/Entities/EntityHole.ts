@@ -56,6 +56,11 @@ class EntityHole implements Entity
         }
     }
 
+    public bump()
+    {
+        
+    }
+
     public reset() : void 
     {
 

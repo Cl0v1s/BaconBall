@@ -12,6 +12,8 @@ class EntityPlayer extends EntityWalking
     private respawnx : number = 0; 
     private respawny : number = 0;
 
+    private nextAction : Function = null;
+
     constructor(scene : Scene, file : string,  x : number, y : number)
     {
         super();
@@ -66,6 +68,12 @@ class EntityPlayer extends EntityWalking
         }
         if(this.life <= 0)
             this.reset();
+
+        if(this.nextAction != null)
+        {
+            this.nextAction.bind(this)();
+            this.nextAction = null;
+        }
     }
 
     public setEmitter(emitter : ParticleEmitter) : void 
@@ -154,26 +162,38 @@ class EntityPlayer extends EntityWalking
 
     public moveLeft() : void
     {
+        this.nextAction = function()
+        {
         if(this.vx <= 0)
             this.vx = this.onFire > 0 ? -Config.PlayerSpeed*2 : -Config.PlayerSpeed;
+    }
     }
 
     public moveRight() : void
     {
+        this.nextAction = function()
+        {
         if(this.vx >= 0)
             this.vx = this.onFire > 0 ? Config.PlayerSpeed*2 : Config.PlayerSpeed;
+    }
     }
 
     public moveUp() : void
     {
+        this.nextAction = function()
+        {
         if(this.vy <= 0)
             this.vy = this.onFire > 0 ? -Config.PlayerSpeed*2 : -Config.PlayerSpeed;
+    }
     }
 
     public moveDown() : void
     {
-        if(this.vy >= 0)
-            this.vy = this.onFire > 0 ? Config.PlayerSpeed*2 : Config.PlayerSpeed;
+        this.nextAction = function()
+        {
+            if(this.vy >= 0)
+                this.vy = this.onFire > 0 ? Config.PlayerSpeed*2 : Config.PlayerSpeed;
+        }
     }
 
 }

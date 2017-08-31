@@ -92,7 +92,7 @@ class EntityPig extends EntityWalking
         else
             this.hits = 0;
 
-        this.IA();
+        //this.IA();
     }
 
     public hit(other : Entity) : void
@@ -105,8 +105,24 @@ class EntityPig extends EntityWalking
         if(other.Vy() != 0)
             my = other.Vy()/Math.abs(other.Vy());
 
+        if(mx == 0 && other.sprite.x + other.sprite.width / 2 < this.sprite.x)
+            mx = 0.5;
+        else if(mx == 0 && other.sprite.x + other.sprite.width / 2 > this.sprite.x + this.sprite.width)
+            mx = -0.5;
+
+        if(my == 0 && other.sprite.y + other.sprite.height / 2 < this.sprite.y)
+            my = 0.5;
+        else if(my == 0 && other.sprite.y + other.sprite.height / 2 > this.sprite.y + this.sprite.height)
+            my = -0.5;
+
+        
+
         this.shootx = 50 * mx;
         this.shooty = 50 * my;
+
+        this.hits += 1;
+        
+
 
         this.hits += 1;
 

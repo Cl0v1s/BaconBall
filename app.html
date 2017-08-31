@@ -1,11 +1,21 @@
 <html>
 	<head>
+		<meta name="viewport" content="width=device-width, user-scalable=no">
+		<script type="text/javascript" src="cordova.js"></script>
 		<script src="index.js"></script>
 		<style>
 			body 
 			{
 				background-color: #282d44;
 				text-align: center;
+				padding: 0;
+				margin: 0;
+			}
+
+			*
+			{
+				padding: 0;
+				margin: 0;
 			}
 
 			canvas
@@ -15,8 +25,12 @@
 		</style>
 	</head>
 	<body>
+		<div id="touch">
+
+		</div>
 		<script>
 			window.addEventListener("load", Program.Main);
+			document.addEventListener('deviceready', Program.Main, false);
 		</script>
 	</body>
 </html>

@@ -14,6 +14,8 @@ class Config {
         }
     }
 }
+Config.Width = 384;
+Config.Height = 608;
 Config.AirDensity = 0.3;
 Config.PlayerLife = 3;
 Config.PlayerFireTime = 500;
@@ -284,10 +286,12 @@ require("pixi.js");
 class Program {
     constructor() {
         this.ready = false;
-        this.app = new PIXI.Application(384, 608, { backgroundColor: 0x282d44 });
+        this.app = new PIXI.Application(Config.Width, Config.Height, { backgroundColor: 0x282d44 });
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-        document.body.appendChild(this.app.view);
+        document.getElementById("touch").appendChild(this.app.view);
         this.load();
+        this.app.renderer.autoResize = true;
+        this.app.renderer.resize(window.innerWidth, window.innerHeight);
     }
     // EntryPoint
     static Main() {
@@ -410,6 +414,73 @@ class ControllerKeyboard {
     action() {
     }
 }
+class ControllerTouch {
+    constructor(player, bounds) {
+        this.lastTouch = null;
+        this.player = player;
+        this.bounds = bounds;
+        document.getElementById("touch").addEventListener("touchstart", (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++)
+                this.mousedown(e.changedTouches[i]);
+        }, true);
+    }
+    mouseup(e = null) {
+        if (e != null && e.identifier != this.lastTouch)
+            return;
+        clearInterval(this.timer);
+        this.timer = null;
+        this.lastTouch = null;
+    }
+    mousedown(e) {
+        let coords = {
+            x: e.clientX,
+            y: e.clientY
+        };
+        this.lastTouch = e.identifier;
+        if (!(coords.x >= this.bounds.x && coords.x <= this.bounds.x + this.bounds.width && coords.y >= this.bounds.y && coords.y <= this.bounds.y + this.bounds.height))
+            return;
+        if (coords.x >= this.bounds.x + this.bounds.width / 3 && coords.x <= this.bounds.x + this.bounds.width - this.bounds.width / 3 && coords.y < this.bounds.y + this.bounds.height / 2) {
+            this.up();
+            return;
+        }
+        if (coords.x >= this.bounds.x + this.bounds.width / 3 && coords.x <= this.bounds.x + this.bounds.width - this.bounds.width / 3 && coords.y > this.bounds.y + this.bounds.height / 2) {
+            this.down();
+            return;
+        }
+        if (coords.x >= this.bounds.x + this.bounds.width / 3) {
+            this.right();
+        }
+        if (coords.x <= this.bounds.x + this.bounds.width - this.bounds.width / 3) {
+            this.left();
+        }
+    }
+    left() {
+        this.mouseup();
+        this.timer = setInterval(() => {
+            this.player.moveLeft();
+        }, 20);
+    }
+    right() {
+        this.mouseup();
+        this.timer = setInterval(() => {
+            this.player.moveRight();
+        }, 20);
+    }
+    up() {
+        this.mouseup();
+        this.timer = setInterval(() => {
+            this.player.moveUp();
+        }, 20);
+    }
+    down() {
+        this.mouseup();
+        this.timer = setInterval(() => {
+            this.player.moveDown();
+        }, 20);
+    }
+    action() {
+    }
+}
 class EntityHole {
     constructor(scene, x, y) {
         this.solid = false;
@@ -446,6 +517,8 @@ class EntityHole {
         if (other instanceof EntityPig) {
             this.scene.but(this.player);
         }
+    }
+    bump() {
     }
     reset() {
     }
@@ -488,6 +561,8 @@ class EntityWalking {
         if (Math.round(this.vy) == 0)
             this.vy = 0;
         this.setFrame();
+    }
+    bump() {
     }
     setFrame() {
         if (this.vy == 0 && this.vx == 0) {
@@ -588,7 +663,7 @@ class EntityPig extends EntityWalking {
         }
         else
             this.hits = 0;
-        this.IA();
+        //this.IA();
     }
     hit(other) {
         let mx = 0;
@@ -597,8 +672,17 @@ class EntityPig extends EntityWalking {
             mx = other.Vx() / Math.abs(other.Vx());
         if (other.Vy() != 0)
             my = other.Vy() / Math.abs(other.Vy());
+        if (mx == 0 && other.sprite.x + other.sprite.width / 2 < this.sprite.x)
+            mx = 0.5;
+        else if (mx == 0 && other.sprite.x + other.sprite.width / 2 > this.sprite.x + this.sprite.width)
+            mx = -0.5;
+        if (my == 0 && other.sprite.y + other.sprite.height / 2 < this.sprite.y)
+            my = 0.5;
+        else if (my == 0 && other.sprite.y + other.sprite.height / 2 > this.sprite.y + this.sprite.height)
+            my = -0.5;
         this.shootx = 50 * mx;
         this.shooty = 50 * my;
+        this.hits += 1;
         this.hits += 1;
     }
     IA() {
@@ -631,6 +715,7 @@ class EntityPlayer extends EntityWalking {
         this.onFire = 0;
         this.respawnx = 0;
         this.respawny = 0;
+        this.nextAction = null;
         this.file = file;
         this.scene = scene;
         let frames = [];
@@ -670,6 +755,10 @@ class EntityPlayer extends EntityWalking {
         }
         if (this.life <= 0)
             this.reset();
+        if (this.nextAction != null) {
+            this.nextAction.bind(this)();
+            this.nextAction = null;
+        }
     }
     setEmitter(emitter) {
         if (this.emitter != null) {
@@ -743,20 +832,28 @@ class EntityPlayer extends EntityWalking {
         Program.GetInstance().App().stage.removeChild(this.sprite);
     }
     moveLeft() {
-        if (this.vx <= 0)
-            this.vx = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
+        this.nextAction = function () {
+            if (this.vx <= 0)
+                this.vx = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
+        };
     }
     moveRight() {
-        if (this.vx >= 0)
-            this.vx = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
+        this.nextAction = function () {
+            if (this.vx >= 0)
+                this.vx = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
+        };
     }
     moveUp() {
-        if (this.vy <= 0)
-            this.vy = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
+        this.nextAction = function () {
+            if (this.vy <= 0)
+                this.vy = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
+        };
     }
     moveDown() {
-        if (this.vy >= 0)
-            this.vy = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
+        this.nextAction = function () {
+            if (this.vy >= 0)
+                this.vy = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
+        };
     }
 }
 var Sprite = PIXI.Sprite;
@@ -1076,9 +1173,11 @@ class SceneGame {
         // Creating players
         this.player1 = new EntityPlayer(this, "hero", -50, -50);
         this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
+        this.controllers.push(new ControllerTouch(this.player1, new PIXI.Rectangle(0, 0, Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height / 2)));
         this.entities.push(this.player1);
         this.player2 = new EntityPlayer(this, "badguy", -50, -150);
         this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
+        this.controllers.push(new ControllerTouch(this.player2, new PIXI.Rectangle(0, Program.GetInstance().App().renderer.height / 2, Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height / 2)));
         this.entities.push(this.player2);
         this.hole1.setPlayer(this.player1);
         this.hole2.setPlayer(this.player2);
@@ -1141,8 +1240,10 @@ class SceneGame {
             }
             // Vérification des collisions avec la map
             normal = HelperEntity.checkCollisionWithMap(this.map, entity);
-            if (normal != null)
+            if (normal != null) {
                 HelperEntity.resolveCollision(normal, entity);
+                entity.bump();
+            }
             entity.update(delta);
         });
     }

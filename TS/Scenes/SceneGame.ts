@@ -43,10 +43,12 @@ class SceneGame implements Scene {
         // Creating players
         this.player1 = new EntityPlayer(this, "hero", -50, -50);
         this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
+        this.controllers.push(new ControllerTouch(this.player1, new PIXI.Rectangle(0,0,Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height /2)))
         this.entities.push(this.player1);
 
         this.player2 = new EntityPlayer(this, "badguy", -50, -150);
         this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
+        this.controllers.push(new ControllerTouch(this.player2, new PIXI.Rectangle(0,Program.GetInstance().App().renderer.height /2,Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height /2)))
         this.entities.push(this.player2);
 
         this.hole1.setPlayer(this.player1);
@@ -128,7 +130,10 @@ class SceneGame implements Scene {
             // Vérification des collisions avec la map
             normal = HelperEntity.checkCollisionWithMap(this.map, entity);
             if (normal != null)
+            {
                 HelperEntity.resolveCollision(normal, entity);
+                entity.bump();
+            }
             entity.update(delta);
 
         });
