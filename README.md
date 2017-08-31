@@ -4,6 +4,10 @@ BaconBall est un petit jeu de "football" développé avec des technologies Web.
 
 L'objectif est de pousser le cochon dans le but de l'adversaire. Le jeu est jouable à deux sur mobile.
 
+## Exemple
+
+https://twitter.com/_cl0vis_/status/903200303624970240
+
 ## Reste-à-faire
 
 * Revoir la résolution des collisions entre les entités, et avec le terrain.
