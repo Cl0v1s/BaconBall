@@ -288,9 +288,9 @@ class Program {
         this.app = new PIXI.Application(Config.Width, Config.Height, { backgroundColor: 0x282d44 });
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         document.getElementById("touch").appendChild(this.app.view);
-        this.load();
         this.app.renderer.autoResize = true;
-        this.app.renderer.resize(window.innerWidth, window.innerHeight);
+        this.app.renderer.resize(Math.floor(window.innerWidth / Config.TileSize) * Config.TileSize, Math.floor(window.innerHeight / Config.TileSize) * Config.TileSize);
+        this.load();
     }
     // EntryPoint
     static Main() {
@@ -664,8 +664,8 @@ class EntityPig extends EntityWalking {
     }
     reset() {
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
-            x: this.sprite.x + this.sprite.width / 2,
-            y: this.sprite.y + this.sprite.height / 2,
+            x: this.sprite.x,
+            y: this.sprite.y,
             life: 10,
             particleLife: 10,
             particleSpeed: 5,
@@ -679,8 +679,8 @@ class EntityPig extends EntityWalking {
         this.vy = 0;
         this.hits = 0;
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
-            x: this.sprite.x + this.sprite.width / 2,
-            y: this.sprite.y + this.sprite.height / 2,
+            x: this.sprite.x,
+            y: this.sprite.y,
             life: 10,
             particleLife: 10,
             particleSpeed: 5,
@@ -706,13 +706,19 @@ class EntityPig extends EntityWalking {
         }
         this.shake();
         if (this.hits > 10)
-            this.reset();
+            //this.reset();
+            this.kick();
         if (this.hits > 0) {
             this.hits -= 0.3;
         }
         else
             this.hits = 0;
         this.IA();
+    }
+    kick() {
+        this.shootx *= 500;
+        this.shooty *= 500;
+        this.hits = 0;
     }
     hit(other) {
         let mx = 0;
@@ -731,7 +737,6 @@ class EntityPig extends EntityWalking {
             my = -0.5;
         this.shootx = 50 * mx;
         this.shooty = 50 * my;
-        this.hits += 1;
         this.hits += 1;
     }
     IA() {
@@ -850,8 +855,8 @@ class EntityPlayer extends EntityWalking {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file + "1.png"), {
-            x: this.sprite.x + this.sprite.width / 2,
-            y: this.sprite.y + this.sprite.height / 2,
+            x: this.sprite.x,
+            y: this.sprite.y,
             life: 10,
             particleLife: 10,
             particleSpeed: 5,
@@ -867,8 +872,8 @@ class EntityPlayer extends EntityWalking {
         this.vx = 0;
         this.vy = 0;
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file + "1.png"), {
-            x: this.sprite.x + this.sprite.width / 2,
-            y: this.sprite.y + this.sprite.height / 2,
+            x: this.sprite.x,
+            y: this.sprite.y,
             life: 10,
             particleLife: 10,
             particleSpeed: 5,
@@ -1235,8 +1240,8 @@ class SceneGame {
         this.entities.push(this.ball);
         this.ball.setRespawn(Program.GetInstance().App().renderer.width / 2 - this.ball.sprite.width / 2, Program.GetInstance().App().renderer.height / 2 - this.ball.sprite.height / 2);
         // Creating GUI
-        this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player1, 0));
-        this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player2, 3.142));
+        this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player2, 0));
+        this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player1, 3.142));
         this.player1.reset();
         this.player2.reset();
         this.ball.reset();

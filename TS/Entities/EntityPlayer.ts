@@ -128,8 +128,8 @@ class EntityPlayer extends EntityWalking
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file+"1.png"), {
-            x : this.sprite.x + this.sprite.width / 2,
-            y : this.sprite.y + this.sprite.height / 2,
+            x : this.sprite.x,
+            y : this.sprite.y,
             life : 10,
             particleLife : 10,
             particleSpeed : 5,
@@ -145,8 +145,8 @@ class EntityPlayer extends EntityWalking
         this.vx = 0;
         this.vy = 0;
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file+"1.png"), {
-            x : this.sprite.x + this.sprite.width / 2,
-            y : this.sprite.y + this.sprite.height / 2,
+            x : this.sprite.x ,
+            y : this.sprite.y,
             life : 10,
             particleLife : 10,
             particleSpeed : 5,

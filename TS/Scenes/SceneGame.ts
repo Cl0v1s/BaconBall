@@ -67,8 +67,8 @@ class SceneGame implements Scene {
         );
 
         // Creating GUI
-        this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player1, 0));
-        this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player2, 3.142));
+        this.guis.push(new GUIStat(0, Program.GetInstance().App().renderer.height - 32, this.player2, 0));
+        this.guis.push(new GUIStat(Program.GetInstance().App().renderer.width, 32, this.player1, 3.142));
 
         this.player1.reset();
         this.player2.reset();

@@ -36,8 +36,8 @@ class EntityPig extends EntityWalking
     public reset() : void
     {
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
-            x : this.sprite.x + this.sprite.width / 2,
-            y : this.sprite.y + this.sprite.height / 2,
+            x : this.sprite.x,
+            y : this.sprite.y,
             life : 10,
             particleLife : 10,
             particleSpeed : 5,
@@ -51,8 +51,8 @@ class EntityPig extends EntityWalking
         this.vy = 0;
         this.hits = 0;
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame("pig1.png"), {
-            x : this.sprite.x + this.sprite.width / 2,
-            y : this.sprite.y + this.sprite.height / 2,
+            x : this.sprite.x,
+            y : this.sprite.y,
             life : 10,
             particleLife : 10,
             particleSpeed : 5,
@@ -85,14 +85,22 @@ class EntityPig extends EntityWalking
         }
         this.shake();
         if(this.hits > 10)
-            this.reset();
+            //this.reset();
+            this.kick();
         if(this.hits > 0) {
             this.hits -= 0.3;
         }
         else
             this.hits = 0;
-
+        
         this.IA();
+    }
+
+    private kick() : void 
+    {
+        this.shootx *= 500;
+        this.shooty *= 500;
+        this.hits = 0;
     }
 
     public hit(other : Entity) : void
@@ -121,11 +129,6 @@ class EntityPig extends EntityWalking
         this.shooty = 50 * my;
 
         this.hits += 1;
-        
-
-
-        this.hits += 1;
-
     }
 
     private IA() : void

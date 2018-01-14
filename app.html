@@ -10,6 +10,15 @@
 				text-align: center;
 				padding: 0;
 				margin: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+
+			html 
+			{
+				width: 100%;
+				height: 100%;
 			}
 
 			*
@@ -21,6 +30,9 @@
 			canvas
 			{
 				display: inline-block;
+				width: 100% !important;
+				height: 100% !important;
+				image-rendering: optimizespeed;
 			}
 		</style>
 	</head>
@@ -29,8 +41,11 @@
 
 		</div>
 		<script>
-			window.addEventListener("load", Program.Main);
-			document.addEventListener('deviceready', Program.Main, false);
+			var DEBUG = true;
+			if(DEBUG == true)
+				window.addEventListener("load", Program.Main);
+			else 
+				document.addEventListener('deviceready', Program.Main, false);
 		</script>
 	</body>
 </html>

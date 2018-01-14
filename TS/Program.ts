@@ -38,10 +38,10 @@ class Program
         this.app = new PIXI.Application(Config.Width, Config.Height, {backgroundColor : 0x282d44});
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         document.getElementById("touch").appendChild(this.app.view);
-        this.load();
         
         this.app.renderer.autoResize = true;
-        this.app.renderer.resize(window.innerWidth, window.innerHeight);
+        this.app.renderer.resize(Math.floor(window.innerWidth/Config.TileSize)*Config.TileSize, Math.floor(window.innerHeight/Config.TileSize)*Config.TileSize);
+        this.load();
         
     }
 
