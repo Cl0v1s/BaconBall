@@ -14,6 +14,8 @@ class EntityPlayer extends EntityWalking
 
     private nextAction : Function = null;
 
+    private carrying : Entity = null;
+
     constructor(scene : Scene, file : string,  x : number, y : number)
     {
         super();
@@ -74,6 +76,56 @@ class EntityPlayer extends EntityWalking
             this.nextAction.bind(this)();
             this.nextAction = null;
         }
+        this.updateCarrying();
+    }
+
+    public hit(other : Entity) : void 
+    {
+        if(other instanceof EntityPig)
+            this.carry(other);
+    }
+
+    private updateCarrying() : void 
+    {
+        if(this.carrying == null)
+            return;
+        this.carrying.sprite.x = this.sprite.x;
+        this.carrying.sprite.y = this.sprite.y -this.carrying.sprite.height / 2;
+        this.carrying.setVx(0);
+        this.carrying.setVy(0); 
+    }
+
+    public carry(other : Entity) : void 
+    {
+        this.carrying = other;
+        this.carrying.solid = false;
+    }
+
+    public throw(vx : number, vy : number)
+    {
+        if(vx > 0)
+        {
+            this.carrying.sprite.x = this.sprite.x + this.sprite.width;
+        }
+        if(vx < 0)
+        {
+            this.carrying.sprite.x = this.sprite.x - this.carrying.sprite.width;
+        }
+
+        if(vy > 0)
+        {
+            this.carrying.sprite.y = this.sprite.y + this.sprite.height;
+        }
+        if(vy < 0)
+        {
+            this.carrying.sprite.y = this.sprite.y - this.carrying.sprite.height;
+        }
+
+
+        this.carrying.setVx(vx);
+        this.carrying.setVy(vy);
+        this.carrying.solid = true;
+        this.carrying = null;
     }
 
     public setEmitter(emitter : ParticleEmitter) : void 
@@ -162,33 +214,61 @@ class EntityPlayer extends EntityWalking
 
     public moveLeft() : void
     {
+        if(this.carrying != null)
+        {
+            this.nextAction = function(){
+                this.throw(-Config.PlayerSpeed*5, 0);
+            }
+            return;
+        }
         this.nextAction = function()
         {
-        if(this.vx <= 0)
-            this.vx = this.onFire > 0 ? -Config.PlayerSpeed*2 : -Config.PlayerSpeed;
-    }
+            if(this.vx <= 0)
+                this.vx = this.onFire > 0 ? -Config.PlayerSpeed*2 : -Config.PlayerSpeed;
+        }
     }
 
     public moveRight() : void
     {
+        if(this.carrying != null)
+        {
+            this.nextAction = function(){
+                this.throw(Config.PlayerSpeed*5, 0);
+            }
+            return;
+        }
         this.nextAction = function()
         {
-        if(this.vx >= 0)
-            this.vx = this.onFire > 0 ? Config.PlayerSpeed*2 : Config.PlayerSpeed;
-    }
+            if(this.vx >= 0)
+                this.vx = this.onFire > 0 ? Config.PlayerSpeed*2 : Config.PlayerSpeed;
+        }
     }
 
     public moveUp() : void
     {
+        if(this.carrying != null)
+        {
+            this.nextAction = function(){
+                this.throw(0, -Config.PlayerSpeed*5);
+            }
+            return;
+        }
         this.nextAction = function()
         {
-        if(this.vy <= 0)
-            this.vy = this.onFire > 0 ? -Config.PlayerSpeed*2 : -Config.PlayerSpeed;
-    }
+            if(this.vy <= 0)
+                this.vy = this.onFire > 0 ? -Config.PlayerSpeed*2 : -Config.PlayerSpeed;
+        }
     }
 
     public moveDown() : void
     {
+        if(this.carrying != null)
+        {
+            this.nextAction = function(){
+                this.throw(0, Config.PlayerSpeed*5);
+            }
+            return;
+        }
         this.nextAction = function()
         {
             if(this.vy >= 0)

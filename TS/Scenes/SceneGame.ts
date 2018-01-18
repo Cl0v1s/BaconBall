@@ -128,7 +128,13 @@ class SceneGame implements Scene {
             }
 
             // Vérification des collisions avec la map
+            try {
             normal = HelperEntity.checkCollisionWithMap(this.map, entity);
+            }
+            catch(e)
+            {
+                
+            }
             if (normal != null)
             {
                 HelperEntity.resolveCollision(normal, entity);

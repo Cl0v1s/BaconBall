@@ -641,7 +641,7 @@ class EntityWalking {
         throw new Error("Method not implemented.");
     }
 }
-/// <reference path="EntityWalking.ts" />
+/// <reference path="EntityWalking.ts" />import { Sprite } from "pixi.js";
 class EntityPig extends EntityWalking {
     constructor(scene, x, y) {
         super();
@@ -704,40 +704,20 @@ class EntityPig extends EntityWalking {
             this.shootx = 0;
             this.shooty = 0;
         }
+        if (this.sprite.x < 0 || this.sprite.x > Config.Width || this.sprite.y < 0 || this.sprite.y > Config.Height)
+            this.reset();
         this.shake();
         if (this.hits > 10)
-            //this.reset();
-            this.kick();
+            this.reset();
         if (this.hits > 0) {
-            this.hits -= 0.3;
+            this.hits -= 0.5;
         }
         else
             this.hits = 0;
         this.IA();
     }
-    kick() {
-        this.shootx *= 500;
-        this.shooty *= 500;
-        this.hits = 0;
-    }
-    hit(other) {
-        let mx = 0;
-        let my = 0;
-        if (other.Vx() != 0)
-            mx = other.Vx() / Math.abs(other.Vx());
-        if (other.Vy() != 0)
-            my = other.Vy() / Math.abs(other.Vy());
-        if (mx == 0 && other.sprite.x + other.sprite.width / 2 < this.sprite.x)
-            mx = 0.5;
-        else if (mx == 0 && other.sprite.x + other.sprite.width / 2 > this.sprite.x + this.sprite.width)
-            mx = -0.5;
-        if (my == 0 && other.sprite.y + other.sprite.height / 2 < this.sprite.y)
-            my = 0.5;
-        else if (my == 0 && other.sprite.y + other.sprite.height / 2 > this.sprite.y + this.sprite.height)
-            my = -0.5;
-        this.shootx = 50 * mx;
-        this.shooty = 50 * my;
-        this.hits += 1;
+    bump() {
+        this.hits++;
     }
     IA() {
         if (this.vx != 0 || this.vy != 0)
@@ -770,6 +750,7 @@ class EntityPlayer extends EntityWalking {
         this.respawnx = 0;
         this.respawny = 0;
         this.nextAction = null;
+        this.carrying = null;
         this.file = file;
         this.scene = scene;
         let frames = [];
@@ -813,6 +794,41 @@ class EntityPlayer extends EntityWalking {
             this.nextAction.bind(this)();
             this.nextAction = null;
         }
+        this.updateCarrying();
+    }
+    hit(other) {
+        if (other instanceof EntityPig)
+            this.carry(other);
+    }
+    updateCarrying() {
+        if (this.carrying == null)
+            return;
+        this.carrying.sprite.x = this.sprite.x;
+        this.carrying.sprite.y = this.sprite.y - this.carrying.sprite.height / 2;
+        this.carrying.setVx(0);
+        this.carrying.setVy(0);
+    }
+    carry(other) {
+        this.carrying = other;
+        this.carrying.solid = false;
+    }
+    throw(vx, vy) {
+        if (vx > 0) {
+            this.carrying.sprite.x = this.sprite.x + this.sprite.width;
+        }
+        if (vx < 0) {
+            this.carrying.sprite.x = this.sprite.x - this.carrying.sprite.width;
+        }
+        if (vy > 0) {
+            this.carrying.sprite.y = this.sprite.y + this.sprite.height;
+        }
+        if (vy < 0) {
+            this.carrying.sprite.y = this.sprite.y - this.carrying.sprite.height;
+        }
+        this.carrying.setVx(vx);
+        this.carrying.setVy(vy);
+        this.carrying.solid = true;
+        this.carrying = null;
     }
     setEmitter(emitter) {
         if (this.emitter != null) {
@@ -886,24 +902,48 @@ class EntityPlayer extends EntityWalking {
         Program.GetInstance().App().stage.removeChild(this.sprite);
     }
     moveLeft() {
+        if (this.carrying != null) {
+            this.nextAction = function () {
+                this.throw(-Config.PlayerSpeed * 5, 0);
+            };
+            return;
+        }
         this.nextAction = function () {
             if (this.vx <= 0)
                 this.vx = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
         };
     }
     moveRight() {
+        if (this.carrying != null) {
+            this.nextAction = function () {
+                this.throw(Config.PlayerSpeed * 5, 0);
+            };
+            return;
+        }
         this.nextAction = function () {
             if (this.vx >= 0)
                 this.vx = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
         };
     }
     moveUp() {
+        if (this.carrying != null) {
+            this.nextAction = function () {
+                this.throw(0, -Config.PlayerSpeed * 5);
+            };
+            return;
+        }
         this.nextAction = function () {
             if (this.vy <= 0)
                 this.vy = this.onFire > 0 ? -Config.PlayerSpeed * 2 : -Config.PlayerSpeed;
         };
     }
     moveDown() {
+        if (this.carrying != null) {
+            this.nextAction = function () {
+                this.throw(0, Config.PlayerSpeed * 5);
+            };
+            return;
+        }
         this.nextAction = function () {
             if (this.vy >= 0)
                 this.vy = this.onFire > 0 ? Config.PlayerSpeed * 2 : Config.PlayerSpeed;
@@ -1293,7 +1333,11 @@ class SceneGame {
                 });
             }
             // Vérification des collisions avec la map
-            normal = HelperEntity.checkCollisionWithMap(this.map, entity);
+            try {
+                normal = HelperEntity.checkCollisionWithMap(this.map, entity);
+            }
+            catch (e) {
+            }
             if (normal != null) {
                 HelperEntity.resolveCollision(normal, entity);
                 entity.bump();

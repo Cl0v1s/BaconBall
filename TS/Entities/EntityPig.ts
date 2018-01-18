@@ -1,4 +1,6 @@
-/// <reference path="EntityWalking.ts" />
+/// <reference path="EntityWalking.ts" />import { Sprite } from "pixi.js";
+
+
 
 
 class EntityPig extends EntityWalking
@@ -83,12 +85,15 @@ class EntityPig extends EntityWalking
             this.shootx = 0;
             this.shooty = 0;
         }
+
+        if(this.sprite.x < 0 ||  this.sprite.x > Config.Width || this.sprite.y < 0 || this.sprite.y > Config.Height)
+            this.reset();
+
         this.shake();
         if(this.hits > 10)
-            //this.reset();
-            this.kick();
+            this.reset();
         if(this.hits > 0) {
-            this.hits -= 0.3;
+            this.hits -= 0.5;
         }
         else
             this.hits = 0;
@@ -96,39 +101,9 @@ class EntityPig extends EntityWalking
         this.IA();
     }
 
-    private kick() : void 
+    public bump()
     {
-        this.shootx *= 500;
-        this.shooty *= 500;
-        this.hits = 0;
-    }
-
-    public hit(other : Entity) : void
-    {
-        let mx = 0;
-        let my = 0;
-
-        if(other.Vx() != 0)
-            mx = other.Vx()/Math.abs(other.Vx());
-        if(other.Vy() != 0)
-            my = other.Vy()/Math.abs(other.Vy());
-
-        if(mx == 0 && other.sprite.x + other.sprite.width / 2 < this.sprite.x)
-            mx = 0.5;
-        else if(mx == 0 && other.sprite.x + other.sprite.width / 2 > this.sprite.x + this.sprite.width)
-            mx = -0.5;
-
-        if(my == 0 && other.sprite.y + other.sprite.height / 2 < this.sprite.y)
-            my = 0.5;
-        else if(my == 0 && other.sprite.y + other.sprite.height / 2 > this.sprite.y + this.sprite.height)
-            my = -0.5;
-
-        
-
-        this.shootx = 50 * mx;
-        this.shooty = 50 * my;
-
-        this.hits += 1;
+        this.hits++;
     }
 
     private IA() : void
