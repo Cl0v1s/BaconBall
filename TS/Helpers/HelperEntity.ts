@@ -161,6 +161,22 @@ class HelperEntity {
         results.forEach((r) => {
            result = result.add(r);
         });
+        if(result.x !=  0 && Math.abs(result.x) < 1)
+        {
+            if(result.x < 0)
+                result.x = -1;
+            if(result.x > 0)
+                result.x = 1;
+        }
+
+        if(result.y !=  0 && Math.abs(result.y) < 1)
+        {
+            if(result.y < 0)
+                result.y = -1;
+            if(result.y > 0)
+                result.y = 1;
+        }
+
         return result;
     }
 

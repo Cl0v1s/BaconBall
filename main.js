@@ -342,29 +342,39 @@ class ControllerKeyboard {
         let up = this.up.bind(this);
         let down = this.down.bind(this);
         ControllerKeyboard.keyboard(leftcode).press = () => {
-            Program.GetInstance().App().ticker.add(left);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.left();
+            }, 20);
         };
         ControllerKeyboard.keyboard(upcode).press = () => {
-            Program.GetInstance().App().ticker.add(up);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.up();
+            }, 20);
         };
         ControllerKeyboard.keyboard(rightcode).press = () => {
-            Program.GetInstance().App().ticker.add(right);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.right();
+            }, 20);
         };
         ControllerKeyboard.keyboard(downcode).press = () => {
-            Program.GetInstance().App().ticker.add(down);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.down();
+            }, 20);
         };
-        ControllerKeyboard.keyboard(leftcode).release = () => {
-            Program.GetInstance().App().ticker.remove(left);
+        /*ControllerKeyboard.keyboard(leftcode).release = () => {
         };
         ControllerKeyboard.keyboard(upcode).release = () => {
-            Program.GetInstance().App().ticker.remove(up);
+
         };
         ControllerKeyboard.keyboard(rightcode).release = () => {
-            Program.GetInstance().App().ticker.remove(right);
+
         };
         ControllerKeyboard.keyboard(downcode).release = () => {
-            Program.GetInstance().App().ticker.remove(down);
-        };
+        };*/
     }
     static keyboard(keyCode) {
         var key = {};
@@ -411,6 +421,10 @@ class ControllerKeyboard {
         this.player.moveDown();
     }
     action() {
+    }
+    cancel() {
+        clearInterval(this.timer);
+        this.timer = null;
     }
 }
 class ControllerTouch {
@@ -528,6 +542,10 @@ class ControllerTouch {
         }, 20);
     }
     action() {
+    }
+    cancel() {
+        clearInterval(this.timer);
+        this.timer = null;
     }
 }
 class EntityHole {
@@ -714,7 +732,7 @@ class EntityPig extends EntityWalking {
         }
         else
             this.hits = 0;
-        this.IA();
+        //this.IA();
     }
     bump() {
         this.hits++;
@@ -1083,6 +1101,18 @@ class HelperEntity {
         results.forEach((r) => {
             result = result.add(r);
         });
+        if (result.x != 0 && Math.abs(result.x) < 1) {
+            if (result.x < 0)
+                result.x = -1;
+            if (result.x > 0)
+                result.x = 1;
+        }
+        if (result.y != 0 && Math.abs(result.y) < 1) {
+            if (result.y < 0)
+                result.y = -1;
+            if (result.y > 0)
+                result.y = 1;
+        }
         return result;
     }
     static checkCollisionWithEntity(entity1, entity2) {
@@ -1339,7 +1369,14 @@ class SceneGame {
             catch (e) {
             }
             if (normal != null) {
+                console.log(normal);
                 HelperEntity.resolveCollision(normal, entity);
+                if (entity instanceof EntityPlayer) {
+                    this.controllers.forEach((controller) => {
+                        if (controller.player == entity)
+                            controller.cancel();
+                    });
+                }
                 entity.bump();
             }
             entity.update(delta);

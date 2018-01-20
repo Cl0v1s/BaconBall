@@ -7,12 +7,11 @@
     "run": "superstatic",
     "build": "tsc --project TS && babel main.js --out-file babel.js && browserify main.js -o  index.js",
     "build-debug": "tsc --project TS && browserify main.js -o  index.js",
-    "test" : "cp index.js BaconBall/www/index.js && cp app.html BaconBall/www/index.html && cd BaconBall &&  cordova run android",
-    "test-windows" : "copy index.js BaconBall/www/index.js && copy app.html BaconBall/www/index.html && cordova run android"
+    "test": "cp index.js BaconBall/www/index.js && cp app.html BaconBall/www/index.html && cd BaconBall &&  cordova run android",
+    "test-windows": "copy index.js BaconBall/www/index.js && copy app.html BaconBall/www/index.html && cordova run android"
   },
   "author": "Clovis Portron",
   "license": "ISC",
-
   "dependencies": {
     "pixi-particles": "^2.1.5",
     "pixi.js": "^4.5.5"

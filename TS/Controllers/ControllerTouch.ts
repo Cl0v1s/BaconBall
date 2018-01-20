@@ -144,4 +144,11 @@ class ControllerTouch implements Controller
         action(): void {
     
         }
+
+        public cancel() : void 
+        {
+            clearInterval(this.timer);
+            this.timer = null;
+
+        }
 }

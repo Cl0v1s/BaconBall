@@ -129,7 +129,7 @@ class SceneGame implements Scene {
 
             // Vérification des collisions avec la map
             try {
-            normal = HelperEntity.checkCollisionWithMap(this.map, entity);
+                normal = HelperEntity.checkCollisionWithMap(this.map, entity);
             }
             catch(e)
             {
@@ -137,7 +137,15 @@ class SceneGame implements Scene {
             }
             if (normal != null)
             {
+                console.log(normal);
                 HelperEntity.resolveCollision(normal, entity);
+                if(entity instanceof EntityPlayer)
+                {
+                    this.controllers.forEach((controller : Controller) => {
+                        if(controller.player == entity)
+                            controller.cancel();
+                    });
+                }
                 entity.bump();
             }
             entity.update(delta);

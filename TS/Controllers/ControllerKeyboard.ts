@@ -3,6 +3,7 @@
  */
 class ControllerKeyboard implements Controller {
     player: EntityPlayer;
+    timer;
 
     constructor(player: EntityPlayer, upcode : number, downcode : number, leftcode : number, rightcode : number) {
         this.player = player;
@@ -11,34 +12,40 @@ class ControllerKeyboard implements Controller {
         let up = this.up.bind(this);
         let down = this.down.bind(this);
         ControllerKeyboard.keyboard(leftcode).press = () => {
-            Program.GetInstance().App().ticker.add(left);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.left();
+            }, 20);
         };
         ControllerKeyboard.keyboard(upcode).press = () => {
-            Program.GetInstance().App().ticker.add(up);
-
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.up();
+            }, 20);
         };
         ControllerKeyboard.keyboard(rightcode).press = () => {
-            Program.GetInstance().App().ticker.add(right);
-
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.right();
+            }, 20);
         };
         ControllerKeyboard.keyboard(downcode).press = () => {
-            Program.GetInstance().App().ticker.add(down);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => {
+                this.down();
+            }, 20);
         };
 
-        ControllerKeyboard.keyboard(leftcode).release = () => {
-            Program.GetInstance().App().ticker.remove(left);
+        /*ControllerKeyboard.keyboard(leftcode).release = () => {
         };
         ControllerKeyboard.keyboard(upcode).release = () => {
-            Program.GetInstance().App().ticker.remove(up);
 
         };
         ControllerKeyboard.keyboard(rightcode).release = () => {
-            Program.GetInstance().App().ticker.remove(right);
 
         };
         ControllerKeyboard.keyboard(downcode).release = () => {
-            Program.GetInstance().App().ticker.remove(down);
-        };
+        };*/
 
     }
 
@@ -97,6 +104,12 @@ class ControllerKeyboard implements Controller {
 
     action(): void {
 
+    }
+
+    public cancel() : void 
+    {
+        clearInterval(this.timer);
+        this.timer = null;
     }
 
 }

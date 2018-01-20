@@ -11,4 +11,6 @@ interface Controller
     down() : void;
     action() : void;
 
+    cancel() : void;
+
 }
