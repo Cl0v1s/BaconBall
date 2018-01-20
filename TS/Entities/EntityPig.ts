@@ -86,24 +86,24 @@ class EntityPig extends EntityWalking
             this.shooty = 0;
         }
 
-        if(this.sprite.x < 0 ||  this.sprite.x > Config.Width || this.sprite.y < 0 || this.sprite.y > Config.Height)
+        if(this.sprite.x < 0 ||  this.sprite.x > Program.GetInstance().App().screen.width || this.sprite.y < 0 || this.sprite.y > Program.GetInstance().App().screen.height)
             this.reset();
 
-        this.shake();
+        /*this.shake();
         if(this.hits > 10)
             this.reset();
         if(this.hits > 0) {
             this.hits -= 0.5;
         }
         else
-            this.hits = 0;
+            this.hits = 0;*/
         
-        //this.IA();
+        this.IA();
     }
 
     public bump()
     {
-        this.hits++;
+        //this.hits++;
     }
 
     private IA() : void

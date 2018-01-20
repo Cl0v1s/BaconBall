@@ -179,6 +179,10 @@ class EntityPlayer extends EntityWalking
     {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
+        if(this.scene instanceof SceneGame)
+        {
+            this.scene.cancelControllers(this);
+        }
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file+"1.png"), {
             x : this.sprite.x,
             y : this.sprite.y,

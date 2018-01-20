@@ -47,7 +47,6 @@ class ParticleEmitter
             em.particlePool.push(new Particle(texture));
         }
         em.id = em.scene.registerParticleEmitter(em);
-        console.log(em.config.zone);
         return em;
     }
 

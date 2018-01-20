@@ -723,20 +723,20 @@ class EntityPig extends EntityWalking {
             this.shootx = 0;
             this.shooty = 0;
         }
-        if (this.sprite.x < 0 || this.sprite.x > Config.Width || this.sprite.y < 0 || this.sprite.y > Config.Height)
+        if (this.sprite.x < 0 || this.sprite.x > Program.GetInstance().App().screen.width || this.sprite.y < 0 || this.sprite.y > Program.GetInstance().App().screen.height)
             this.reset();
-        this.shake();
-        if (this.hits > 10)
+        /*this.shake();
+        if(this.hits > 10)
             this.reset();
-        if (this.hits > 0) {
+        if(this.hits > 0) {
             this.hits -= 0.5;
         }
         else
-            this.hits = 0;
-        //this.IA();
+            this.hits = 0;*/
+        this.IA();
     }
     bump() {
-        this.hits++;
+        //this.hits++;
     }
     IA() {
         if (this.vx != 0 || this.vy != 0)
@@ -889,6 +889,9 @@ class EntityPlayer extends EntityWalking {
     reset() {
         //TODO: ajouter particles
         //TODO: ajouter spawn a coté des buts
+        if (this.scene instanceof SceneGame) {
+            this.scene.cancelControllers(this);
+        }
         ParticleEmitter.create(this.scene, PIXI.Texture.fromFrame(this.file + "1.png"), {
             x: this.sprite.x,
             y: this.sprite.y,
@@ -1220,7 +1223,6 @@ class ParticleEmitter {
             em.particlePool.push(new Particle(texture));
         }
         em.id = em.scene.registerParticleEmitter(em);
-        console.log(em.config.zone);
         return em;
     }
     createParticle() {
@@ -1290,11 +1292,6 @@ class SceneGame {
     populate() {
         // Génération de la map
         this.map = new GameMap(this);
-        // Creation des buts
-        this.hole1 = new EntityHole(this, Math.floor(Program.GetInstance().App().renderer.width / 2 - 32), 32);
-        this.entities.push(this.hole1);
-        this.hole2 = new EntityHole(this, Math.floor(Program.GetInstance().App().renderer.width / 2 - 32), Math.floor(Program.GetInstance().App().renderer.height - 64));
-        this.entities.push(this.hole2);
         // Creating players
         this.player1 = new EntityPlayer(this, "hero", -50, -50);
         this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
@@ -1304,6 +1301,11 @@ class SceneGame {
         this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
         this.controllers.push(new ControllerTouch(this.player2, new PIXI.Rectangle(0, Program.GetInstance().App().renderer.height / 2, Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height / 2)));
         this.entities.push(this.player2);
+        // Creation des buts
+        this.hole1 = new EntityHole(this, Math.floor(Program.GetInstance().App().renderer.width / 2 - 32), 32);
+        this.entities.push(this.hole1);
+        this.hole2 = new EntityHole(this, Math.floor(Program.GetInstance().App().renderer.width / 2 - 32), Math.floor(Program.GetInstance().App().renderer.height - 64));
+        this.entities.push(this.hole2);
         this.hole1.setPlayer(this.player1);
         this.hole2.setPlayer(this.player2);
         // Creating pig
@@ -1357,7 +1359,10 @@ class SceneGame {
                     normal = HelperEntity.checkCollisionWithEntity(entity, other);
                     if (normal != null) {
                         other.hit(entity);
-                        if (other instanceof EntityPig || other.solid == false)
+                        if (other instanceof EntityPlayer) {
+                            this.cancelControllers(other);
+                        }
+                        if (other.solid == false)
                             return;
                         HelperEntity.resolveCollision(normal, entity);
                     }
@@ -1370,17 +1375,19 @@ class SceneGame {
             catch (e) {
             }
             if (normal != null) {
-                console.log(normal);
                 HelperEntity.resolveCollision(normal, entity);
                 if (entity instanceof EntityPlayer) {
-                    this.controllers.forEach((controller) => {
-                        if (controller.player == entity)
-                            controller.cancel();
-                    });
+                    this.cancelControllers(entity);
                 }
                 entity.bump();
             }
             entity.update(delta);
+        });
+    }
+    cancelControllers(player) {
+        this.controllers.forEach((controller) => {
+            if (controller.player == player)
+                controller.cancel();
         });
     }
     but(player) {

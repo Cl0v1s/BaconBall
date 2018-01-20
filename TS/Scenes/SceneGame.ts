@@ -24,6 +24,20 @@ class SceneGame implements Scene {
         // Génération de la map
         this.map = new GameMap(this);
 
+
+
+        // Creating players
+        this.player1 = new EntityPlayer(this, "hero", -50, -50);
+        this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
+        this.controllers.push(new ControllerTouch(this.player1, new PIXI.Rectangle(0,0,Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height /2)))
+        this.entities.push(this.player1);
+
+        this.player2 = new EntityPlayer(this, "badguy", -50, -150);
+        this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
+        this.controllers.push(new ControllerTouch(this.player2, new PIXI.Rectangle(0,Program.GetInstance().App().renderer.height /2,Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height /2)))
+        this.entities.push(this.player2);
+
+
         // Creation des buts
         this.hole1 = new EntityHole(this,
             Math.floor(Program.GetInstance().App().renderer.width / 2 - 32),
@@ -39,17 +53,6 @@ class SceneGame implements Scene {
         this.entities.push(
             this.hole2
         );
-
-        // Creating players
-        this.player1 = new EntityPlayer(this, "hero", -50, -50);
-        this.controllers.push(new ControllerKeyboard(this.player1, 90, 83, 81, 68));
-        this.controllers.push(new ControllerTouch(this.player1, new PIXI.Rectangle(0,0,Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height /2)))
-        this.entities.push(this.player1);
-
-        this.player2 = new EntityPlayer(this, "badguy", -50, -150);
-        this.controllers.push(new ControllerKeyboard(this.player2, 38, 40, 37, 39));
-        this.controllers.push(new ControllerTouch(this.player2, new PIXI.Rectangle(0,Program.GetInstance().App().renderer.height /2,Program.GetInstance().App().renderer.width, Program.GetInstance().App().renderer.height /2)))
-        this.entities.push(this.player2);
 
         this.hole1.setPlayer(this.player1);
         this.hole2.setPlayer(this.player2);
@@ -120,7 +123,11 @@ class SceneGame implements Scene {
                     normal = HelperEntity.checkCollisionWithEntity(entity, other);
                     if (normal != null) {
                         other.hit(entity);
-                        if (other instanceof EntityPig || other.solid == false) 
+                        if(other instanceof EntityPlayer)
+                        {
+                            this.cancelControllers(other);
+                        }
+                        if (other.solid == false) 
                             return;
                         HelperEntity.resolveCollision(normal, entity);
                     }
@@ -137,20 +144,24 @@ class SceneGame implements Scene {
             }
             if (normal != null)
             {
-                console.log(normal);
                 HelperEntity.resolveCollision(normal, entity);
                 if(entity instanceof EntityPlayer)
                 {
-                    this.controllers.forEach((controller : Controller) => {
-                        if(controller.player == entity)
-                            controller.cancel();
-                    });
+                    this.cancelControllers(entity);
                 }
                 entity.bump();
             }
             entity.update(delta);
 
         });
+    }
+
+    public cancelControllers(player: EntityPlayer)
+    {
+                            this.controllers.forEach((controller : Controller) => {
+                                if(controller.player == player)
+                                    controller.cancel();
+                            });
     }
 
     public but(player: EntityPlayer)
