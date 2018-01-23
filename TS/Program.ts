@@ -56,6 +56,7 @@ class Program
                     .add("assets/images/GUI/Heart.png")
                     .add("assets/animations/Particles.json")
                     .add("assets/images/Elements/Hole.png")
+                    .add("assets/pixel.fnt")
                     .load(() => { this.setup(); });
     }
 

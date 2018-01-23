@@ -314,6 +314,7 @@ class Program {
             .add("assets/images/GUI/Heart.png")
             .add("assets/animations/Particles.json")
             .add("assets/images/Elements/Hole.png")
+            .add("assets/pixel.fnt")
             .load(() => { this.setup(); });
     }
     setup() {
@@ -769,6 +770,7 @@ class EntityPlayer extends EntityWalking {
         this.respawny = 0;
         this.nextAction = null;
         this.carrying = null;
+        this.score = 0;
         this.file = file;
         this.scene = scene;
         let frames = [];
@@ -783,6 +785,12 @@ class EntityPlayer extends EntityWalking {
         this.sprite.play();
         Program.GetInstance().App().stage.addChild(this.sprite);
         this.mass = 0.3;
+    }
+    Score() {
+        return this.score;
+    }
+    setScore(score) {
+        this.score = score;
     }
     setRespawn(x, y) {
         this.respawnx = x;
@@ -996,6 +1004,15 @@ class GUIStat {
             this.container.addChild(sprite);
         }
         this.lastLife = Math.round(this.player.Life());
+        let style = new PIXI.TextStyle({
+            fill: "white",
+            fontFamily: "Roboto",
+            fontSize: "20px"
+        });
+        this.score = new PIXI.Text(this.player.Score() + "pts", style);
+        this.score.position.x = (Math.round(this.player.Life() + 1)) * 40;
+        this.score.position.y = 5;
+        this.container.addChild(this.score);
         Program.GetInstance().App().stage.addChild(this.container);
     }
     update() {
@@ -1008,6 +1025,7 @@ class GUIStat {
             }
             this.lastLife = Math.round(this.player.Life());
         }
+        this.score.text = this.player.Score() + "pts";
     }
     destroy() {
         Program.GetInstance().App().stage.removeChild(this.container);
@@ -1367,7 +1385,6 @@ class SceneGame {
                         }
                         if (other.solid == false)
                             return;
-                        console.debug(normal);
                         HelperEntity.resolveCollision(normal, entity);
                     }
                 });
@@ -1395,6 +1412,10 @@ class SceneGame {
         });
     }
     but(player) {
+        if (this.player1 == player)
+            this.player2.setScore(this.player2.Score() + 1);
+        else
+            this.player1.setScore(this.player1.Score() + 1);
         this.player1.reset();
         this.player2.reset();
     }

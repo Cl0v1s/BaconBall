@@ -16,6 +16,8 @@ class EntityPlayer extends EntityWalking
 
     private carrying : Entity = null;
 
+    private score : number = 0;
+
     constructor(scene : Scene, file : string,  x : number, y : number)
     {
         super();
@@ -36,6 +38,16 @@ class EntityPlayer extends EntityWalking
         Program.GetInstance().App().stage.addChild(this.sprite);
 
         this.mass = 0.3;
+    }
+
+    public Score() : number
+    {
+        return this.score;
+    }
+
+    public setScore(score : number) : void 
+    {
+        this.score = score;
     }
 
     public setRespawn(x : number, y : number)

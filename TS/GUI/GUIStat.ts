@@ -4,6 +4,7 @@ class GUIStat implements GUI
     private player : EntityPlayer;
     private hearts : Array<Sprite>;
     private container : PIXI.Container;
+    private score : PIXI.Text;
     private lastLife : number;
     private x : number;
     private y : number;
@@ -34,6 +35,17 @@ class GUIStat implements GUI
             this.container.addChild(sprite);
         }
         this.lastLife = Math.round(this.player.Life());
+
+        let style = new PIXI.TextStyle({
+            fill : "white",
+            fontFamily : "Roboto",
+            fontSize : "20px"
+        });
+        this.score = new PIXI.Text(this.player.Score()+"pts", style);
+        this.score.position.x = (Math.round(this.player.Life()+1))*40;
+        this.score.position.y = 5;
+
+        this.container.addChild(this.score);
         Program.GetInstance().App().stage.addChild(this.container);
     }
 
@@ -49,6 +61,7 @@ class GUIStat implements GUI
             }
             this.lastLife = Math.round(this.player.Life());
         }
+        this.score.text = this.player.Score()+"pts";
     }
 
     destroy(): void {

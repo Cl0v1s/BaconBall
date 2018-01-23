@@ -129,7 +129,6 @@ class SceneGame implements Scene {
                         }
                         if (other.solid == false) 
                             return;
-                        console.debug(normal);
                         HelperEntity.resolveCollision(normal, entity);
                     }
                 });
@@ -159,14 +158,18 @@ class SceneGame implements Scene {
 
     public cancelControllers(player: EntityPlayer)
     {
-                            this.controllers.forEach((controller : Controller) => {
-                                if(controller.player == player)
-                                    controller.cancel();
-                            });
+        this.controllers.forEach((controller : Controller) => {
+            if(controller.player == player)
+                controller.cancel();
+        });
     }
 
     public but(player: EntityPlayer)
     {
+        if(this.player1 == player)
+            this.player2.setScore(this.player2.Score() + 1);
+        else 
+            this.player1.setScore(this.player1.Score() + 1); 
         this.player1.reset();
         this.player2.reset();
     }
