@@ -123,12 +123,13 @@ class SceneGame implements Scene {
                     normal = HelperEntity.checkCollisionWithEntity(entity, other);
                     if (normal != null) {
                         other.hit(entity);
-                        if(other instanceof EntityPlayer)
+                        if(other instanceof EntityPlayer && entity instanceof EntityPig)
                         {
                             this.cancelControllers(other);
                         }
                         if (other.solid == false) 
                             return;
+                        console.debug(normal);
                         HelperEntity.resolveCollision(normal, entity);
                     }
                 });

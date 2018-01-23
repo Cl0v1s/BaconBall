@@ -218,9 +218,16 @@ class HelperEntity {
 
     public static resolveCollision(normal : Vector2, entity1 : Entity, entity2? : Entity) : void
     {
+        if((normal.x > 0 && entity1.vx < 0) || (normal.x < 0 && entity1.vx > 0) && entity1.scene instanceof SceneGame && entity1 instanceof EntityPlayer)
+        (<SceneGame>entity1.scene).cancelControllers(<EntityPlayer>entity1);
+    if((normal.y > 0 && entity1.vy < 0) || (normal.y < 0 && entity1.vy > 0) && entity1.scene instanceof SceneGame && entity1 instanceof EntityPlayer)
+        (<SceneGame>entity1.scene).cancelControllers(<EntityPlayer>entity1);
+
+
         entity1.setVy(normal.y);
         entity1.setVx(normal.x);
 
+ 
         if(entity2 != null)
         {
             entity2.setVy(-normal.y);

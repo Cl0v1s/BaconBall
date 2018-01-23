@@ -1139,6 +1139,10 @@ class HelperEntity {
         return normal;
     }
     static resolveCollision(normal, entity1, entity2) {
+        if ((normal.x > 0 && entity1.vx < 0) || (normal.x < 0 && entity1.vx > 0) && entity1.scene instanceof SceneGame && entity1 instanceof EntityPlayer)
+            entity1.scene.cancelControllers(entity1);
+        if ((normal.y > 0 && entity1.vy < 0) || (normal.y < 0 && entity1.vy > 0) && entity1.scene instanceof SceneGame && entity1 instanceof EntityPlayer)
+            entity1.scene.cancelControllers(entity1);
         entity1.setVy(normal.y);
         entity1.setVx(normal.x);
         if (entity2 != null) {
@@ -1358,11 +1362,12 @@ class SceneGame {
                     normal = HelperEntity.checkCollisionWithEntity(entity, other);
                     if (normal != null) {
                         other.hit(entity);
-                        if (other instanceof EntityPlayer) {
+                        if (other instanceof EntityPlayer && entity instanceof EntityPig) {
                             this.cancelControllers(other);
                         }
                         if (other.solid == false)
                             return;
+                        console.debug(normal);
                         HelperEntity.resolveCollision(normal, entity);
                     }
                 });
