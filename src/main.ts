@@ -12,12 +12,11 @@ import TileEntity from './entities/tile';
 
 async function init() {
     await new Promise((resolve) => me.device.onReady(resolve));
-    me.video.init(640, 480, {parent : "screen", scaleMethod : "fit", renderer : me.video.CANVAS});
+    me.video.init(480, 640, {parent : "screen", scaleMethod : "fit", renderer : me.video.CANVAS});
     await new Promise((resolve) => me.loader.preload(ressources, resolve));
     game.textures = createTextures();
 
     me.pool.register("Player1", Player1Entity, false);
-    me.pool.register("Tile", TileEntity, true);
 
     me.state.set(me.state.PLAY, new DefaultStage());
     me.state.change(me.state.PLAY, false);

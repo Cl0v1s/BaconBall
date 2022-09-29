@@ -9,7 +9,7 @@ export default class Player1Entity extends me.Entity {
             height: 32,
         });
 
-        this.anchorPoint.set(0.5, 1.0);
+        this.anchorPoint.set(0.5, 0.5);
         this.body.ignoreGravity = true;
 
         this.body.setMaxVelocity(5, 5);

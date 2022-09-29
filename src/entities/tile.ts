@@ -8,10 +8,14 @@ export default class TileEntity extends me.Entity {
             height: 32,
         });
 
-        this.anchorPoint.set(0, 0);
+        this.anchorPoint.set(0.5, 0.5);
         this.body.ignoreGravity = true;
 
 
         this.renderable = game.textures?.createSpriteFromName(`Tileset-0${tile}`) as me.Renderable;
+    }
+
+    update(dt: any): boolean {
+        return false;
     }
 }
