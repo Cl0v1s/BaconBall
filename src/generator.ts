@@ -19,9 +19,14 @@ function limits(map: Array<Array<number>>) {
     const width = map.length;
     const height = map[0].length;
     // top and bottom
-    for(let i = 0; i < map.length; i++) {
-        map[i][0] = 1;
-        map[i][height - 1] = 1;
+    for(let i = 0; i < width; i++) {
+        map[i][0] = 2;
+        map[i][height - 1] = 2;
+    }
+
+    for(let i = 0; i < height - 1; i++) {
+        map[0][i] = 3;
+        map[width - 1][i] = 3;
     }
 
     return map;

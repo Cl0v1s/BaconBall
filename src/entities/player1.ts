@@ -14,6 +14,8 @@ export default class Player1Entity extends me.Entity {
 
         this.body.setMaxVelocity(5, 5);
         this.body.setFriction(0.1, 0.1);
+        this.body.collisionType = me.collision.types.PLAYER_OBJECT;
+        this.body.setCollisionMask(me.collision.types.WORLD_SHAPE);
 
         me.input.bindKey(me.input.KEY.LEFT,  "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -57,5 +59,9 @@ export default class Player1Entity extends me.Entity {
         else sprite.animationpause = false;
 
         return super.update(dt);
+    }
+
+    onCollision(response: any, other: me.Renderable): boolean {
+        return true;
     }
 }
