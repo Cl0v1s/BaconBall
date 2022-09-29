@@ -9,12 +9,53 @@ export default class Player1Entity extends me.Entity {
             height: 32,
         });
 
-        this.renderable = (game.textures as me.TextureAtlas).createAnimationFromName(
+        this.anchorPoint.set(0.5, 1.0);
+        this.body.ignoreGravity = true;
+
+        this.body.setMaxVelocity(5, 5);
+        this.body.setFriction(0.1, 0.1);
+
+        me.input.bindKey(me.input.KEY.LEFT,  "left");
+        me.input.bindKey(me.input.KEY.RIGHT, "right");
+        me.input.bindKey(me.input.KEY.DOWN,  "down");
+        me.input.bindKey(me.input.KEY.UP,  "up");
+
+
+        const sprite = (game.textures as me.TextureAtlas).createAnimationFromName(
             Player1.frames.map((f) => f.filename)
         );
 
-        this.anchorPoint.set(0.5, 1.0);
+        sprite.addAnimation("down", [0, 1, 2, 3].reverse());
+        sprite.addAnimation("side", [4, 5, 6, 7]);
+        sprite.addAnimation("up", [12, 13, 14, 15]);
 
-        this.body.ignoreGravity = true;
+        sprite.setCurrentAnimation("up");
+        this.renderable = sprite;
+    }
+
+    update(dt): boolean {
+        const sprite = this.renderable as me.Sprite;
+        const body = this.body as me.Body;
+        if (me.input.isKeyPressed("left"))    {
+            body.force.x = -(body as me.Body).friction.x * 2;
+            if(!sprite.isCurrentAnimation("side")) sprite.setCurrentAnimation("side");
+        } else if (me.input.isKeyPressed("right")) {
+            body.force.x = (body as me.Body).friction.x * 2;
+            if(!sprite.isCurrentAnimation("side")) sprite.setCurrentAnimation("side");
+        }
+        else if (me.input.isKeyPressed("up"))    {
+            body.force.y = -(body as me.Body).friction.y * 2;
+            if(!sprite.isCurrentAnimation("up")) sprite.setCurrentAnimation("up");
+        } else if (me.input.isKeyPressed("down")) {
+            body.force.y = (body as me.Body).friction.y * 2;
+            if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
+        }
+        if(body.vel.x == 0 && body.vel.y == 0) {
+            sprite.setAnimationFrame(0);
+            sprite.animationpause = true;
+        }
+        else sprite.animationpause = false;
+
+        return super.update(dt);
     }
 }
