@@ -2,6 +2,19 @@ import * as me from 'melonjs';
 import game from './../game';
 import Player1 from './../../res/animations/Player1.json';
 
+
+class PlayerBounds extends me.Bounds {
+    constructor(bounds: me.Bounds) {
+        super(undefined);
+        this.addBounds(bounds, true);
+    }
+
+    overlaps(bounds: me.Bounds | me.Rect): boolean {
+        if(!(bounds as any).isMap) return super.overlaps(bounds);
+        return true;
+    }
+}
+
 export default class Player1Entity extends me.Entity {
     constructor(x: number, y: number) {
         super(x, y, { 
@@ -10,8 +23,13 @@ export default class Player1Entity extends me.Entity {
         });
 
         this.anchorPoint.set(0.5, 0.5);
-        this.body.ignoreGravity = true;
 
+        const bounds = new PlayerBounds(this.body.getBounds());
+        this.body = new me.Body(this);
+        this.body.bounds = bounds;
+        this.body.ignoreGravity = true;
+        this.body.addShape(this.body.getBounds());
+        
         this.body.setMaxVelocity(5, 5);
         this.body.setFriction(0.1, 0.1);
         this.body.collisionType = me.collision.types.PLAYER_OBJECT;

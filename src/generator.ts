@@ -1,5 +1,9 @@
 import * as me from 'melonjs';
 
+export const SOLID = [
+    false, true, true, true
+]
+
 function init(map: Array<Array<number>>) {
     const width = me.game.viewport.width / 32;
     const height = me.game.viewport.height / 32;
