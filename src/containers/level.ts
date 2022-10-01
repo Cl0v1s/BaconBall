@@ -19,7 +19,7 @@ export default class LevelContainer extends me.Container {
         for(let i = 0; i < map.length; i++) {
             for(let u = 0; u < map[i].length; u++) {
                 if(map[i][u] == 0) continue;
-                const tile = game.textures?.createSpriteFromName(`Tileset-0${map[i][u]}`) as me.Sprite;
+                const tile = game.textures?.createSpriteFromName(`Tileset-${String(map[i][u]).padStart(2, "0")}`) as me.Sprite;
                 tile.pos.set(i * 32, u * 32);
                 tile.anchorPoint.set(0, 0);
                 this.addChild(tile);
