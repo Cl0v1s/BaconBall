@@ -8,7 +8,7 @@ import { createTextures, ressources} from './res';
 import DefaultStage from './stages/default';
 
 import Player1Entity from './entities/player1';
-import TileEntity from './entities/tile';
+import Player2Entity from './entities/player2';
 
 async function init() {
     await new Promise((resolve) => me.device.onReady(resolve));
@@ -17,6 +17,7 @@ async function init() {
     game.textures = createTextures();
 
     me.pool.register("Player1", Player1Entity, false);
+    me.pool.register("Player2", Player2Entity, false);
 
     me.state.set(me.state.PLAY, new DefaultStage());
     me.state.change(me.state.PLAY, false);
