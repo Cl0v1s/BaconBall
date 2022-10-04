@@ -1,5 +1,5 @@
 import * as me from 'melonjs';
-
+import ActorBounds from './actorBounds';
 
 interface Directions {
     LEFT,
@@ -8,17 +8,7 @@ interface Directions {
     DOWN,
 };
 
-class PlayerBounds extends me.Bounds {
-    constructor(bounds: me.Bounds) {
-        super(undefined);
-        this.addBounds(bounds, true);
-    }
 
-    overlaps(bounds: me.Bounds | me.Rect): boolean {
-        if(!(bounds as any).isMap) return super.overlaps(bounds);
-        return true;
-    }
-}
 
 export default class PlayerEntity extends me.Entity {
 
@@ -35,15 +25,12 @@ export default class PlayerEntity extends me.Entity {
         this.anchorPoint.set(0.5, 0.5);
 
 
-        const bounds = new PlayerBounds(this.body.getBounds());
+        const bounds = new ActorBounds(this.body.getBounds());
         this.body = new me.Body(this);
         this.body.bounds = bounds;
         this.body.ignoreGravity = true;
         this.body.addShape(new me.Rect(0, 0, sprite.width, sprite.height));
 
-        this.body.mass = 400;
-
-        
         this.body.setMaxVelocity(5, 5);
         this.body.setFriction(0.1, 0.1);
 
@@ -85,11 +72,13 @@ export default class PlayerEntity extends me.Entity {
     }
 
     onCollision(response: any, other: me.Renderable): boolean {
-        if(other.body.collisionType == me.collision.types.PLAYER_OBJECT) {
-            response.a.pos.sub(response.overlapV);
-            this.body.vel.y *= -1;
-            this.body.vel.x *= -1;
-            return true;
+        if(other.body.collisionType == me.collision.types.PLAYER_OBJECT || other.body.collisionType == me.collision.types.ENEMY_OBJECT ) {
+            if(this == response.a) {
+                response.b.body.vel = response.a.body.vel.clone();
+            }
+            response.a.body.vel.setZero();
+            response.a.pos.sub(response.overlapV.ceil());
+            return false;
         }
 
 

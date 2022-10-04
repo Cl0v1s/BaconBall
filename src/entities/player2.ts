@@ -1,7 +1,7 @@
 import * as me from 'melonjs';
 import game from '../game';
 import PlayerEntity from './player';
-import Player1 from '../../res/animations/Player1.json';
+import Player2 from '../../res/animations/Player2.json';
 
 const Directions = {
     LEFT: "p2left",
@@ -13,7 +13,7 @@ const Directions = {
 export default class Player2Entity extends PlayerEntity {
     constructor(x: number, y: number) {
         const sprite = (game.textures as me.TextureAtlas).createAnimationFromName(
-            Player1.frames.map((f) => f.filename)
+            Player2.frames.map((f) => f.filename)
         );
         super(x, y, sprite, Directions);
 

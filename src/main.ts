@@ -9,6 +9,7 @@ import DefaultStage from './stages/default';
 
 import Player1Entity from './entities/player1';
 import Player2Entity from './entities/player2';
+import PigEntity from './entities/pig';
 
 async function init() {
     await new Promise((resolve) => me.device.onReady(resolve));
@@ -18,6 +19,7 @@ async function init() {
 
     me.pool.register("Player1", Player1Entity, false);
     me.pool.register("Player2", Player2Entity, false);
+    me.pool.register("Pig", PigEntity, false);
 
     me.state.set(me.state.PLAY, new DefaultStage());
     me.state.change(me.state.PLAY, false);
