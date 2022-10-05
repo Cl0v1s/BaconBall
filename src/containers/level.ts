@@ -10,6 +10,7 @@ export default class LevelContainer extends me.Container {
 
         this.body = new me.Body(this);
         this.body.ignoreGravity = true;
+        this.body.setStatic(true);
         this.body.collisionType = me.collision.types.WORLD_SHAPE;
         (this.body.bounds as any).isMap = true;
         this.body.setFriction(100, 100);

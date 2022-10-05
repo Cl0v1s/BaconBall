@@ -55,7 +55,8 @@ export default class PlayerEntity extends me.Entity {
             body.force.x = (body as me.Body).friction.x * 2;
             if(!sprite.isCurrentAnimation("side")) sprite.setCurrentAnimation("side");
         }
-        else if (me.input.isKeyPressed(this.directions.UP))    {
+        
+        if (me.input.isKeyPressed(this.directions.UP))    {
             body.force.y = -(body as me.Body).friction.y * 2;
             if(!sprite.isCurrentAnimation("up")) sprite.setCurrentAnimation("up");
         } else if (me.input.isKeyPressed(this.directions.DOWN)) {
@@ -72,16 +73,12 @@ export default class PlayerEntity extends me.Entity {
     }
 
     onCollision(response: any, other: me.Renderable): boolean {
-        if(other.body.collisionType == me.collision.types.PLAYER_OBJECT || other.body.collisionType == me.collision.types.ENEMY_OBJECT ) {
-            if(this == response.a) {
-                response.b.body.vel = response.a.body.vel.clone();
-            }
-            response.a.body.vel.setZero();
-            response.a.pos.sub(response.overlapV.ceil());
+        if(other.body.collisionType == me.collision.types.ENEMY_OBJECT) {
+            response.a.pos.sub(response.overlapV);
             return false;
-        }
-
-
+        };
+        // the collision code must be called for only one of the two players
+        if(other.body.collisionType == this.body.collisionType) return this !== response.b;
         return true;
     }
 }

@@ -56,6 +56,7 @@ export default class PigEntity extends me.Entity {
         } else if (this.body.vel.y > 0) {
             if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
         }
+
         if(body.vel.x == 0 && body.vel.y == 0) {
             sprite.setAnimationFrame(0);
             sprite.animationpause = true;
@@ -65,9 +66,31 @@ export default class PigEntity extends me.Entity {
         return super.update(dt);
     }
 
+    onBounce(response: any, other: me.Renderable): boolean {
+        response.a.pos.sub(response.overlapV);
+        if(response.overlapV.x !== 0) this.body.vel.x *= -0.75;
+        if(response.overlapV.y !== 0) this.body.vel.y *= -0.75;
+        return false;
+    }
+
+    onShoot(response: any, other: me.Renderable): boolean {
+        response.a.pos.sub(response.overlapV);
+        const angle = other.angleTo(this);
+        this.body.vel = new me.Vector2d(Math.cos(angle) * other.body.vel.length() * 2, Math.sin(angle) * other.body.vel.length() * 2);
+        other.body.vel.setZero();
+        return false;
+    }
+
     onCollision(response: any, other: me.Renderable): boolean {
-        if(other.body.collisionType === me.collision.types.PLAYER_OBJECT) return false;
-        return true;
+        if(other.body.collisionType === me.collision.types.WORLD_SHAPE) {
+            return this.onBounce(response, other);
+        }
+
+        if(other.body.collisionType === me.collision.types.PLAYER_OBJECT) {
+            if(other.body.vel.x === 0 && other.body.vel.y === 0) return this.onBounce(response, other);
+            return this.onShoot(response, other);
+        }
+        return false;
     }
 
 }
