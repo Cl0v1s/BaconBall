@@ -40,21 +40,25 @@ export default class PigEntity extends me.Entity {
     update(dt): boolean {
         const sprite = this.renderable as me.Sprite;
         const body = this.body as me.Body;
-        if (this.body.vel.x > 0)    {
-            if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX) {
-                sprite.setCurrentAnimation("side");
-                sprite.flipX(false);
+        
+        if(Math.abs(this.body.vel.y) >= Math.abs(this.body.vel.x)) {
+            if (this.body.vel.y < 0)    {
+                if(!sprite.isCurrentAnimation("up")) sprite.setCurrentAnimation("up");
+            } else if (this.body.vel.y > 0) {
+                if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
+            } 
+        }   else {
+            if (this.body.vel.x > 0)    {
+                if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX) {
+                    sprite.setCurrentAnimation("side");
+                    sprite.flipX(false);
+                }
+            } else if (this.body.vel.x < 0) {
+                if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX == false) {
+                    sprite.setCurrentAnimation("side");
+                    sprite.flipX(true);
+                }
             }
-        } else if (this.body.vel.x < 0) {
-            if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX == false) {
-                sprite.setCurrentAnimation("side");
-                sprite.flipX(true);
-            }
-        }
-        else if (this.body.vel.y < 0)    {
-            if(!sprite.isCurrentAnimation("up")) sprite.setCurrentAnimation("up");
-        } else if (this.body.vel.y > 0) {
-            if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
         }
 
         if(body.vel.x == 0 && body.vel.y == 0) {

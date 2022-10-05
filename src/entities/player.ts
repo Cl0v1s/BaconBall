@@ -50,19 +50,37 @@ export default class PlayerEntity extends me.Entity {
         const body = this.body as me.Body;
         if (me.input.isKeyPressed(this.directions.LEFT))    {
             body.force.x = -(body as me.Body).friction.x * 2;
-            if(!sprite.isCurrentAnimation("side")) sprite.setCurrentAnimation("side");
         } else if (me.input.isKeyPressed(this.directions.RIGHT)) {
             body.force.x = (body as me.Body).friction.x * 2;
-            if(!sprite.isCurrentAnimation("side")) sprite.setCurrentAnimation("side");
         }
         
         if (me.input.isKeyPressed(this.directions.UP))    {
             body.force.y = -(body as me.Body).friction.y * 2;
-            if(!sprite.isCurrentAnimation("up")) sprite.setCurrentAnimation("up");
         } else if (me.input.isKeyPressed(this.directions.DOWN)) {
             body.force.y = (body as me.Body).friction.y * 2;
-            if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
         }
+
+
+        if(Math.abs(this.body.vel.y) >= Math.abs(this.body.vel.x)) {
+            if (this.body.vel.y < 0)    {
+                if(!sprite.isCurrentAnimation("up")) sprite.setCurrentAnimation("up");
+            } else if (this.body.vel.y > 0) {
+                if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
+            }
+        } else {
+            if (this.body.vel.x > 0)    {
+                if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX) {
+                    sprite.setCurrentAnimation("side");
+                    sprite.flipX(false);
+                }
+            } else if (this.body.vel.x < 0) {
+                if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX == false) {
+                    sprite.setCurrentAnimation("side");
+                    sprite.flipX(true);
+                }
+            }
+        }
+
         if(body.vel.x == 0 && body.vel.y == 0) {
             sprite.setAnimationFrame(0);
             sprite.animationpause = true;
