@@ -5,7 +5,17 @@ import ActorBounds from './actorBounds';
 
 import game from './../game';
 
+const z = (x) => -(1/300) * x * x + 0.2 * x + 1;
+
 export default class PigEntity extends me.Entity {
+
+    // movement
+    private target: me.Vector2d | null;
+    private timer: number;
+
+
+    private jumping: number;
+
     constructor(x, y) {
         super(x, y, { width: 32, height: 32});
 
@@ -26,8 +36,6 @@ export default class PigEntity extends me.Entity {
 
         this.body = body;
 
-
-
         sprite.addAnimation("down", [3, 2, 1, 0].reverse());
         sprite.addAnimation("side", [4, 5, 6, 7]);
         sprite.addAnimation("up", [8, 9, 10, 11]);
@@ -35,11 +43,69 @@ export default class PigEntity extends me.Entity {
         sprite.setCurrentAnimation("down");
 
         this.renderable = sprite;
+
+        this.target = null;
+        this.timer = 0;
+
+        this.jumping = -1;
+    }
+
+    /**
+     * Set a new target for the pig to follow
+     */
+    setTarget(): void {
+        this.timer = 0;
+        const position = new me.Vector2d(this.pos.x, this.pos.y);
+        const v = new me.Vector2d(
+            Math.floor(Math.random() * 100) * (Math.random() < 0.5 ? -1 : 1),
+            Math.floor(Math.random() * 100) * (Math.random() < 0.5 ? -1 : 1),
+        );
+        this.target = position.sub(v);
+    }
+
+    /**
+     * Update movement IA
+     */
+    updateTarget(): void {
+        if(this.body.vel.x  == 0 && this.body.vel.y == 0 && this.target == null && this.timer == 0) {
+            this.timer = setTimeout(() => this.setTarget(), 1000);
+        }
+        if(this.target && this.target.x !== this.pos.x && this.target.y !== this.pos.y) {
+            this.body.vel.x = (this.target.x - this.pos.x);
+            this.body.vel.y = (this.target.y - this.pos.y);
+            this.body.vel = this.body.vel.normalize();
+        }
+
+        if(this.target && this.pos.distance(this.target) < 5) {
+            this.target = null;
+            this.timer = 0;
+        }
+    }
+
+
+    jump(): void {
+        if(this.jumping < 0) this.jumping = 0;
+    }
+
+    updateJump(): void {
+        if(this.jumping < 0) return;
+        const lasty = z(this.jumping)
+        this.jumping += 1;
+        const y = z(this.jumping);
+        if(y < 1) {
+            this.jumping = -1;
+            this.renderable.currentTransform.identity();
+            return;
+        }
+        this.renderable.scale(y / lasty);
     }
 
     update(dt): boolean {
         const sprite = this.renderable as me.Sprite;
         const body = this.body as me.Body;
+
+        this.updateTarget();
+        this.updateJump();
         
         if(Math.abs(this.body.vel.y) >= Math.abs(this.body.vel.x)) {
             if (this.body.vel.y < 0)    {
@@ -47,7 +113,7 @@ export default class PigEntity extends me.Entity {
             } else if (this.body.vel.y > 0) {
                 if(!sprite.isCurrentAnimation("down")) sprite.setCurrentAnimation("down");
             } 
-        }   else {
+        } else {
             if (this.body.vel.x > 0)    {
                 if(!sprite.isCurrentAnimation("side") || sprite.isFlippedX) {
                     sprite.setCurrentAnimation("side");
@@ -61,7 +127,7 @@ export default class PigEntity extends me.Entity {
             }
         }
 
-        if(body.vel.x == 0 && body.vel.y == 0) {
+        if((body.vel.x == 0 && body.vel.y == 0) || this.jumping > 0) {
             sprite.setAnimationFrame(0);
             sprite.animationpause = true;
         }
@@ -78,6 +144,7 @@ export default class PigEntity extends me.Entity {
     }
 
     onShoot(response: any, other: me.Renderable): boolean {
+        this.jump();
         response.a.pos.sub(response.overlapV);
         const angle = other.angleTo(this);
         this.body.vel = new me.Vector2d(Math.cos(angle) * other.body.vel.length() * 2, Math.sin(angle) * other.body.vel.length() * 2);
@@ -86,11 +153,17 @@ export default class PigEntity extends me.Entity {
     }
 
     onCollision(response: any, other: me.Renderable): boolean {
+        this.target = null;
+        if(this.timer != 0) {
+            clearTimeout(this.timer);
+            this.timer = 0;
+        }
         if(other.body.collisionType === me.collision.types.WORLD_SHAPE) {
             return this.onBounce(response, other);
         }
 
         if(other.body.collisionType === me.collision.types.PLAYER_OBJECT) {
+            if(this.jumping > 0) return false;
             if(other.body.vel.x === 0 && other.body.vel.y === 0) return this.onBounce(response, other);
             return this.onShoot(response, other);
         }
