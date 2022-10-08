@@ -5,6 +5,9 @@ import ActorBounds from './actorBounds';
 
 import game from './../game';
 
+import { Directions as P1Directions } from './player1';
+import { Directions as P2Directions } from './player2';
+
 const z = (x) => -(1/300) * x * x + 0.2 * x + 1;
 
 export default class PigEntity extends me.Entity {
@@ -83,17 +86,21 @@ export default class PigEntity extends me.Entity {
     }
 
 
-    jump(): void {
-        if(this.jumping < 0) this.jumping = 0;
+    kick(): void {
+        if(this.jumping < 0) {
+            this.jumping = 0;
+        }
     }
 
     updateJump(): void {
         if(this.jumping < 0) return;
+        this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
         const lasty = z(this.jumping)
         this.jumping += 1;
         const y = z(this.jumping);
         if(y < 1) {
             this.jumping = -1;
+            this.body.collisionType = me.collision.types.ENEMY_OBJECT;
             this.renderable.currentTransform.identity();
             return;
         }
@@ -144,7 +151,6 @@ export default class PigEntity extends me.Entity {
     }
 
     onShoot(response: any, other: me.Renderable): boolean {
-        this.jump();
         response.a.pos.sub(response.overlapV);
         const angle = other.angleTo(this);
         this.body.vel = new me.Vector2d(Math.cos(angle) * other.body.vel.length() * 2, Math.sin(angle) * other.body.vel.length() * 2);
@@ -162,8 +168,9 @@ export default class PigEntity extends me.Entity {
             return this.onBounce(response, other);
         }
 
+        if(this.body.collisionType == me.collision.types.PROJECTILE_OBJECT) return false;
+
         if(other.body.collisionType === me.collision.types.PLAYER_OBJECT) {
-            if(this.jumping > 0) return false;
             if(other.body.vel.x === 0 && other.body.vel.y === 0) return this.onBounce(response, other);
             return this.onShoot(response, other);
         }

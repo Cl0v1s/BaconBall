@@ -1,11 +1,13 @@
 import * as me from 'melonjs';
 import ActorBounds from './actorBounds';
+import PigEntity from './pig';
 
 interface Directions {
     LEFT,
     RIGHT,
     UP,
     DOWN,
+    KICK,
 };
 
 
@@ -91,8 +93,10 @@ export default class PlayerEntity extends me.Entity {
     }
 
     onCollision(response: any, other: me.Renderable): boolean {
+        if(other.body.collisionType == me.collision.types.PROJECTILE_OBJECT) return false;
         if(other.body.collisionType == me.collision.types.ENEMY_OBJECT) {
             response.a.pos.sub(response.overlapV);
+            if(me.input.isKeyPressed(this.directions.KICK) && other instanceof PigEntity) other.kick();
             return false;
         };
         // the collision code must be called for only one of the two players
