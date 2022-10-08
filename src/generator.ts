@@ -45,13 +45,13 @@ function decorations(map: Array<Array<number>>) {
             // vegetal
             if(rand >= 9.8) map[i][u] = 12;
 
-            if(
-                rand >= 5
-                && (
-                    i > 0 && map[i - 1][u] == 12
-                    || u > 0 && map[i][u - 1] == 12
-                )
-            ) map[i][u] = 12;
+            // sand
+            if(rand >= 9.95) map[i][u] = 23;
+
+            if(rand >= 6) {
+                if(i > 0 && map[i - 1][u] != 0) map[i][u] = map[i - 1][u];
+                if(u > 0 && map[i][u - 1] != 0) map[i][u] = map[i][u - 1];
+            }
         }
     }
     return map;
@@ -66,7 +66,7 @@ function limits(map: Array<Array<number>>) {
         map[i][height - 1] = 2;
     }
 
-    for(let i = 0; i < height - 1; i++) {
+    for(let i = 0; i < height; i++) {
         map[0][i] = 3;
         map[width - 1][i] = 3;
     }
